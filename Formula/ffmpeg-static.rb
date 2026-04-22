@@ -169,10 +169,10 @@ class FfmpegStatic < Formula
     end
 
     system "./configure", *args
-    system "make", "install"
+    system "make", "-j#{ENV.make_jobs}", "install"
 
     # Build and install additional FFmpeg tools
-    system "make", "alltools"
+    system "make", "-j#{ENV.make_jobs}", "alltools"
     bin.install (buildpath/"tools").children.select { |f| f.file? && f.executable? }
     pkgshare.install buildpath/"tools/python"
   end
