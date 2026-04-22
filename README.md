@@ -8,37 +8,33 @@ This repository contains a GitHub Actions workflow that compiles FFmpeg from sou
 
 FFmpeg source is included as a git submodule pointing to <https://github.com/FFmpeg/FFmpeg.git>.
 
+The build is driven by a local Homebrew formula file, ffmpeg-static.rb, copied from Homebrew core and adapted for static linking.
+
+## Formula source
+
+The local formula in this repository is based on:
+
+<https://github.com/Homebrew/homebrew-core/blob/aa4945b8a55342d9f43f752a15ceed357f9ef05b/Formula/f/ffmpeg-full.rb>
+
 ## Configuration
 
-The build uses the following `./configure` flags:
+The formula passes a broad set of `./configure` flags including static build settings:
 
 ```
---cc=/usr/bin/clang
---prefix=/opt/ffmpeg
---extra-version=tessus
 --disable-shared
 --enable-static
---enable-fontconfig
+--pkg-config-flags=--static
 --enable-gpl
---enable-libaom
---enable-libass
 --enable-libdav1d
---enable-libfreetype
---enable-libgsm
 --enable-libharfbuzz
---enable-libmodplug
 --enable-libmp3lame
 --enable-libopencore-amrnb
 --enable-libopencore-amrwb
---enable-libopenh264
 --enable-libopenjpeg
 --enable-libopus
---enable-librubberband
---enable-libsnappy
 --enable-libsoxr
 --enable-libspeex
 --enable-libtheora
---enable-libtwolame
 --enable-libvidstab
 --enable-libvmaf
 --enable-libvorbis
@@ -51,17 +47,17 @@ The build uses the following `./configure` flags:
 --enable-libzimg
 --enable-libzmq
 --enable-version3
---pkg-config-flags=--static
---disable-ffplay
 ```
 
 On macOS, this produces an FFmpeg build configured for static external linking where available. A fully static binary is generally not possible because Apple system libraries are dynamically linked.
 
-In the GitHub Actions static workflow, libbluray is enabled only when `pkg-config --static libbluray` succeeds. If static libbluray dependencies are unavailable from Homebrew, the workflow disables libbluray and continues the build.
+In the formula static build, libbluray is enabled only when `pkg-config --static libbluray` succeeds. If static libbluray dependencies are unavailable from Homebrew, the formula disables libbluray and continues the build.
 
 ## Build artifacts
 
-The workflow uploads the compiled `ffmpeg` and `ffprobe` binaries as a GitHub Actions artifact after each successful build.
+The workflow builds the local formula using brew install --build-from-source --HEAD ./ffmpeg-static.rb and uploads the compiled binaries as a GitHub Actions artifact after each successful build.
+
+If the build fails, the workflow uploads Homebrew build logs (including any discovered `config.log` files) as a failure artifact.
 
 ## Local build
 
@@ -69,16 +65,11 @@ The workflow uploads the compiled `ffmpeg` and `ffprobe` binaries as a GitHub Ac
 git clone --recursive <repo-url>
 cd ffmpeg-build
 
-# Install dependencies (macOS ARM)
-brew install aom dav1d fontconfig freetype libgsm harfbuzz libass libbluray \
-  libmodplug lame libmysofa opencore-amr openh264 openjpeg opus \
-  rubberband shine snappy libsoxr speex theora twolame \
-  libvidstab libvmaf libvorbis libvpx webp libxml2 x264 x265 xvid \
-  zimg zeromq pkg-config
+# Build and install using the local formula (HEAD)
+brew install --build-from-source --HEAD ./ffmpeg-static.rb
 
-# Build
-cd ffmpeg
-./configure <flags above>
-make -j$(sysctl -n hw.logicalcpu)
-sudo make install
+# Verify
+FFMPEG_PREFIX="$(brew --prefix ffmpeg-static)"
+"$FFMPEG_PREFIX/bin/ffmpeg" -version
+"$FFMPEG_PREFIX/bin/ffmpeg" -buildconf | grep -E -- '--enable-static|--disable-shared'
 ```
