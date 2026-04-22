@@ -18,82 +18,31 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build ffmpeg-static formula (HEAD)
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: 1
+      - name: Build ffmpeg via ffmpeg-build-script
         run: |
-          brew tap kmaddock/ffmpeg-build .
-          brew install --build-from-source openjpeg
-          brew install --build-from-source --HEAD kmaddock/ffmpeg-build/ffmpeg-static
+          cd ffmpeg-build-script
+          ./build-ffmpeg --enable-gpl-and-non-free --build --skip-install
 
       - name: Collect failure logs
         if: failure()
         run: |
           mkdir -p failure-logs
-          LOG_ROOT="$(brew --cache)/logs"
-          if [ -d "$LOG_ROOT/ffmpeg-static" ]; then
-            cp -R "$LOG_ROOT/ffmpeg-static" failure-logs/brew-ffmpeg-static
+          find ffmpeg-build-script -name config.log -exec cp {} failure-logs/ \; || true
+          if [ -d "ffmpeg-build-script/workspace" ]; then
+            cp -R ffmpeg-build-script/workspace failure-logs/workspace
           fi
-          find "$LOG_ROOT" -name config.log -exec cp {} failure-logs/ \; || true
 
       - name: Verify build
         run: |
-          FFMPEG_PREFIX="$(brew --prefix ffmpeg-static)"
-          "${FFMPEG_PREFIX}/bin/ffmpeg" -version
-          "${FFMPEG_PREFIX}/bin/ffprobe" -version
-          "${FFMPEG_PREFIX}/bin/ffmpeg" -buildconf | grep -E -- '--enable-static|--disable-shared'
+          ./ffmpeg-build-script/workspace/bin/ffmpeg -version
+          ./ffmpeg-build-script/workspace/bin/ffprobe -version
+          ./ffmpeg-build-script/workspace/bin/ffmpeg -buildconf
 
       - name: Prepare artifacts
         run: |
-          FFMPEG_PREFIX="$(brew --prefix ffmpeg-static)"
           mkdir -p artifacts
-          cp "${FFMPEG_PREFIX}/bin/ffmpeg" artifacts/
-          cp "${FFMPEG_PREFIX}/bin/ffprobe" artifacts/
-
-      - name: Discover and bundle runtime dylibs
-        run: |
-          set -euo pipefail
-          mkdir -p artifacts/lib
-
-          MANIFEST="artifacts/dylibs-needed.txt"
-          SEEN="$(mktemp)"
-          : > "$MANIFEST"
-
-          scan_binary() {
-            local target="$1"
-
-            [ -f "$target" ] || return 0
-            grep -Fxq "$target" "$SEEN" && return 0
-            echo "$target" >> "$SEEN"
-
-            if ! file "$target" | grep -q 'Mach-O'; then
-              return 0
-            fi
-
-            while IFS= read -r dep; do
-              [ -n "$dep" ] || continue
-              case "$dep" in
-                /usr/lib/*|/System/*)
-                  # Skip Apple-provided system libraries.
-                  ;;
-                @rpath/*|@loader_path/*|@executable_path/*)
-                  # Keep unresolved loader paths in the manifest for visibility.
-                  echo "$dep" >> "$MANIFEST"
-                  ;;
-                *)
-                  echo "$dep" >> "$MANIFEST"
-                  if [ -f "$dep" ]; then
-                    cp -f "$dep" artifacts/lib/
-                    scan_binary "$dep"
-                  fi
-                  ;;
-              esac
-            done < <(otool -L "$target" | tail -n +2 | awk '{print $1}')
-          }
-
-          scan_binary artifacts/ffmpeg
-          scan_binary artifacts/ffprobe
-          sort -u "$MANIFEST" -o "$MANIFEST"
+          cp ./ffmpeg-build-script/workspace/bin/ffmpeg artifacts/
+          cp ./ffmpeg-build-script/workspace/bin/ffprobe artifacts/
 
       - name: Upload failure logs
         if: failure()
