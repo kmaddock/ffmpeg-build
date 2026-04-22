@@ -15,34 +15,34 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
-      - name: Build ffmpeg via ffmpeg-build-script
+      - name: Install build tools
         run: |
-          cd ffmpeg-build-script
-          ./build-ffmpeg --enable-gpl-and-non-free --build --skip-install
+          brew install pkg-config nasm yasm autoconf automake libtool cmake meson ninja python-setuptools rust
+
+      - name: Build ffmpeg
+        run: make -j$(sysctl -n hw.ncpu) NONFREE_AND_GPL=1
 
       - name: Collect failure logs
         if: failure()
         run: |
           mkdir -p failure-logs
-          find ffmpeg-build-script -name config.log -exec cp {} failure-logs/ \; || true
-          if [ -d "ffmpeg-build-script/workspace" ]; then
-            cp -R ffmpeg-build-script/workspace failure-logs/workspace
+          find . -name config.log -exec cp {} failure-logs/ \; || true
+          if [ -d "workspace" ]; then
+            cp -R workspace failure-logs/workspace
           fi
 
       - name: Verify build
         run: |
-          ./ffmpeg-build-script/workspace/bin/ffmpeg -version
-          ./ffmpeg-build-script/workspace/bin/ffprobe -version
-          ./ffmpeg-build-script/workspace/bin/ffmpeg -buildconf
+          ./workspace/bin/ffmpeg -version
+          ./workspace/bin/ffprobe -version
+          ./workspace/bin/ffmpeg -buildconf
 
       - name: Prepare artifacts
         run: |
           mkdir -p artifacts
-          cp ./ffmpeg-build-script/workspace/bin/ffmpeg artifacts/
-          cp ./ffmpeg-build-script/workspace/bin/ffprobe artifacts/
+          cp ./workspace/bin/ffmpeg artifacts/
+          cp ./workspace/bin/ffprobe artifacts/
 
       - name: Upload failure logs
         if: failure()

@@ -1,3 +1,0 @@
-[submodule "ffmpeg-build-script"]
-	path = ffmpeg-build-script
-	url = https://github.com/markus-perl/ffmpeg-build-script.git
