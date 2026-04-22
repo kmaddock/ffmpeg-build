@@ -141,7 +141,6 @@ class FfmpegStatic < Formula
       --enable-libass
       --enable-libopencore-amrnb
       --enable-libopencore-amrwb
-      --enable-libopenjpeg
       --enable-libspeex
       --enable-libsoxr
       --enable-libzmq
@@ -160,6 +159,13 @@ class FfmpegStatic < Formula
     else
       opoo "Static libbluray not available via pkg-config; building without libbluray"
       args << "--disable-libbluray"
+    end
+
+    if system Formula["pkgconf"].opt_bin/"pkg-config", "--exists", "--print-errors", "--static", "libopenjp2"
+      args << "--enable-libopenjpeg"
+    else
+      opoo "Static libopenjp2 not available via pkg-config; building without libopenjpeg"
+      args << "--disable-libopenjpeg"
     end
 
     system "./configure", *args
