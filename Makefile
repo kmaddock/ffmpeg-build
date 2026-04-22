@@ -651,7 +651,9 @@ $(PACKAGES)/soxr.done: $(PACKAGES)/soxr-0.1.3.tar.xz
 	cd $(PACKAGES)/soxr-0.1.3 && \
 		mkdir -p build && cd build && \
 		cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(WORKSPACE)" \
-			-DBUILD_SHARED_LIBS:bool=off -DWITH_OPENMP:bool=off -DBUILD_TESTS:bool=off -Wno-dev .. && \
+			-DBUILD_SHARED_LIBS:bool=off -DWITH_OPENMP:bool=off -DBUILD_TESTS:bool=off \
+			$(if $(MACOS_SILICON),-DCMAKE_C_FLAGS="-include $(CWD)/soxr-aarch64-neon.h" -DWITH_CR32S=ON -DWITH_CR64S=ON) \
+			-Wno-dev .. && \
 		$(MAKE) -j $(MJOBS) && \
 		$(MAKE) install
 	@echo "0.1.3" > $@
