@@ -47,6 +47,51 @@ jobs:
           cp "${FFMPEG_PREFIX}/bin/ffmpeg" artifacts/
           cp "${FFMPEG_PREFIX}/bin/ffprobe" artifacts/
 
+      - name: Discover and bundle runtime dylibs
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/lib
+
+          MANIFEST="artifacts/dylibs-needed.txt"
+          SEEN="$(mktemp)"
+          : > "$MANIFEST"
+
+          scan_binary() {
+            local target="$1"
+
+            [ -f "$target" ] || return 0
+            grep -Fxq "$target" "$SEEN" && return 0
+            echo "$target" >> "$SEEN"
+
+            if ! file "$target" | grep -q 'Mach-O'; then
+              return 0
+            fi
+
+            while IFS= read -r dep; do
+              [ -n "$dep" ] || continue
+              case "$dep" in
+                /usr/lib/*|/System/*)
+                  # Skip Apple-provided system libraries.
+                  ;;
+                @rpath/*|@loader_path/*|@executable_path/*)
+                  # Keep unresolved loader paths in the manifest for visibility.
+                  echo "$dep" >> "$MANIFEST"
+                  ;;
+                *)
+                  echo "$dep" >> "$MANIFEST"
+                  if [ -f "$dep" ]; then
+                    cp -f "$dep" artifacts/lib/
+                    scan_binary "$dep"
+                  fi
+                  ;;
+              esac
+            done < <(otool -L "$target" | tail -n +2 | awk '{print $1}')
+          }
+
+          scan_binary artifacts/ffmpeg
+          scan_binary artifacts/ffprobe
+          sort -u "$MANIFEST" -o "$MANIFEST"
+
       - name: Upload failure logs
         if: failure()
         uses: actions/upload-artifact@v4
