@@ -21,7 +21,7 @@ jobs:
           brew install pkg-config nasm yasm autoconf automake libtool cmake meson ninja python-setuptools rust
 
       - name: Build ffmpeg
-        run: make -j$(sysctl -n hw.ncpu) NONFREE_AND_GPL=1
+        run: make -j$(sysctl -n hw.ncpu) NONFREE_AND_GPL=1 NIGHTLY=1
 
       - name: Collect failure logs
         if: failure()

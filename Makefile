@@ -22,6 +22,7 @@ NONFREE_AND_GPL ?= 0
 DISABLE_LV2     ?= 0
 FULL_STATIC     ?= 0
 SMALL           ?= 0
+NIGHTLY         ?= 0
 
 # Build flags
 CFLAGS   := -I$(WORKSPACE)/include -Wno-int-conversion
@@ -969,11 +970,54 @@ endif # Linux
 # FFmpeg
 # =============================================================================
 
+FFMPEG_SRCDIR := $(PACKAGES)/ffmpeg-src
+
 FFMPEG_EXTRA_VERSION :=
 ifeq ($(UNAME),Darwin)
-  FFMPEG_EXTRA_VERSION := $(FFMPEG_VERSION)
+  ifeq ($(NIGHTLY),1)
+    FFMPEG_EXTRA_VERSION := nightly
+  else
+    FFMPEG_EXTRA_VERSION := $(FFMPEG_VERSION)
+  endif
 endif
 
+ifeq ($(NIGHTLY),1)
+
+# --- Nightly: shallow-clone HEAD of master ---
+$(FFMPEG_SRCDIR)/.git:
+	@mkdir -p $(PACKAGES)
+	git clone --depth 1 https://github.com/FFmpeg/FFmpeg.git $(FFMPEG_SRCDIR)
+
+# Always re-pull on each build; .PHONY-like via the force target
+.PHONY: ffmpeg-pull
+ffmpeg-pull: $(FFMPEG_SRCDIR)/.git
+	cd $(FFMPEG_SRCDIR) && git pull --ff-only
+
+$(PACKAGES)/ffmpeg.done: ffmpeg-pull $(FFMPEG_DEPS) | dirs
+	@if [ -d "$(CWD)/.git" ]; then mv "$(CWD)/.git" "$(CWD)/.git.bak"; fi
+	cd $(FFMPEG_SRCDIR) && \
+		./configure $(CONFIGURE_OPTIONS) \
+			--disable-debug \
+			--disable-shared \
+			--enable-pthreads \
+			--enable-static \
+			--enable-version3 \
+			--extra-cflags="$(CFLAGS)" \
+			--extra-ldexeflags="$(LDEXEFLAGS)" \
+			--extra-ldflags="$(LDFLAGS)" \
+			--extra-libs="$(EXTRALIBS)" \
+			--pkgconfigdir="$(WORKSPACE)/lib/pkgconfig" \
+			--pkg-config-flags="--static" \
+			--prefix="$(WORKSPACE)" \
+			--extra-version="$(FFMPEG_EXTRA_VERSION)" && \
+		$(MAKE) -j $(MJOBS) && \
+		$(MAKE) install
+	@if [ -d "$(CWD)/.git.bak" ]; then mv "$(CWD)/.git.bak" "$(CWD)/.git"; fi
+	@cd $(FFMPEG_SRCDIR) && echo "nightly-$$(git rev-parse --short HEAD)" > $@
+
+else
+
+# --- Release: download tagged tarball ---
 $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION).tar.gz: | dirs
 	$(call download_file,https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n$(FFMPEG_VERSION).tar.gz)
 
@@ -1000,3 +1044,5 @@ $(PACKAGES)/ffmpeg.done: $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION).tar.gz $(F
 		$(MAKE) install
 	@if [ -d "$(CWD)/.git.bak" ]; then mv "$(CWD)/.git.bak" "$(CWD)/.git"; fi
 	@echo "$(FFMPEG_VERSION)" > $@
+
+endif # NIGHTLY
