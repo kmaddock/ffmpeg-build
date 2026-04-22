@@ -5,6 +5,8 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  schedule:
+    - cron: '17 7 * * *'
   workflow_dispatch:
 
 jobs:
@@ -98,6 +100,7 @@ jobs:
         with:
           name: ffmpeg-build-logs
           path: failure-logs/
+          retention-days: 14
           if-no-files-found: warn
 
       - name: Upload artifacts
@@ -105,3 +108,4 @@ jobs:
         with:
           name: ffmpeg-macos-arm64
           path: artifacts/
+          retention-days: 14
