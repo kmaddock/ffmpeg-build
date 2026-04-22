@@ -8,7 +8,7 @@ This repository contains a GitHub Actions workflow that compiles FFmpeg from sou
 
 FFmpeg source is included as a git submodule pointing to <https://github.com/FFmpeg/FFmpeg.git>.
 
-The build is driven by a local Homebrew formula file, ffmpeg-static.rb, copied from Homebrew core and adapted for static linking.
+The build is driven by a local Homebrew formula in the `tap/Formula/` directory, adapted from Homebrew core and configured for static linking. The formula is installed via a local Homebrew tap.
 
 ## Formula source
 
@@ -55,7 +55,7 @@ In the formula static build, libbluray is enabled only when `pkg-config --static
 
 ## Build artifacts
 
-The workflow builds the local formula using brew install --build-from-source --HEAD ./ffmpeg-static.rb and uploads the compiled binaries as a GitHub Actions artifact after each successful build.
+The workflow adds the local `tap/` directory as a Homebrew tap, then builds using `brew install --build-from-source --HEAD homebrew/ffmpeg/ffmpeg-static`. Compiled binaries are uploaded as a GitHub Actions artifact after each successful build.
 
 If the build fails, the workflow uploads Homebrew build logs (including any discovered `config.log` files) as a failure artifact.
 
@@ -65,8 +65,9 @@ If the build fails, the workflow uploads Homebrew build logs (including any disc
 git clone --recursive <repo-url>
 cd ffmpeg-build
 
-# Build and install using the local formula (HEAD)
-brew install --build-from-source --HEAD ./ffmpeg-static.rb
+# Add the local tap and build (HEAD)
+brew tap homebrew/ffmpeg ./tap
+brew install --build-from-source --HEAD homebrew/ffmpeg/ffmpeg-static
 
 # Verify
 FFMPEG_PREFIX="$(brew --prefix ffmpeg-static)"
