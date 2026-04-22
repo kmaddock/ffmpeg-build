@@ -34,7 +34,6 @@ jobs:
             openjpeg \
             opus \
             rubberband \
-            shine \
             snappy \
             libsoxr \
             speex \
@@ -76,7 +75,6 @@ jobs:
             --enable-libopenjpeg \
             --enable-libopus \
             --enable-librubberband \
-            --enable-libshine \
             --enable-libsnappy \
             --enable-libsoxr \
             --enable-libspeex \

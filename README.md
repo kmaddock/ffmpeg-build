@@ -33,7 +33,6 @@ The build uses the following `./configure` flags:
 --enable-libopenjpeg
 --enable-libopus
 --enable-librubberband
---enable-libshine
 --enable-libsnappy
 --enable-libsoxr
 --enable-libspeex
