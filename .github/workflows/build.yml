@@ -23,7 +23,7 @@ jobs:
             dav1d \
             fontconfig \
             freetype \
-            gsm \
+            libgsm \
             harfbuzz \
             libass \
             libbluray \

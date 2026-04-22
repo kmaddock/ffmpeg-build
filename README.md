@@ -67,7 +67,7 @@ git clone --recursive <repo-url>
 cd ffmpeg-build
 
 # Install dependencies (macOS ARM)
-brew install aom dav1d fontconfig freetype gsm harfbuzz libass libbluray \
+brew install aom dav1d fontconfig freetype libgsm harfbuzz libass libbluray \
   libmodplug lame libmysofa opencore-amr openh264 openjpeg opus \
   rubberband shine snappy libsoxr speex theora twolame \
   libvidstab libvmaf libvorbis libvpx webp x264 x265 xvid \
