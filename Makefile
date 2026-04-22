@@ -295,7 +295,12 @@ $(PACKAGES)/gettext.done: $(PACKAGES)/gettext-1.0.tar.gz
 	@rm -rf $(PACKAGES)/gettext-1.0 && mkdir -p $(PACKAGES)/gettext-1.0
 	@tar -xf $< -C $(PACKAGES)/gettext-1.0 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/gettext-1.0 && \
-		./configure --prefix="$(WORKSPACE)" --enable-static --disable-shared && \
+		./configure --prefix="$(WORKSPACE)" --enable-static --disable-shared \
+			--disable-java --disable-csharp \
+			--with-included-glib --with-included-libxml \
+			--without-emacs --without-git \
+			--disable-libasprintf && \
+		cd gettext-runtime && \
 		$(MAKE) -j $(MJOBS) && \
 		$(MAKE) install
 	@echo "1.0" > $@
