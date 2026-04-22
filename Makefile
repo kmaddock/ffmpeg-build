@@ -204,7 +204,7 @@ endif
 # =============================================================================
 
 define download_file
-	curl -L --silent --retry 2 --retry-delay 5 -o $@ "$(1)"
+	curl -L --silent --fail --retry 2 --retry-delay 5 -o $@ "$(1)"
 	@[ -s $@ ] || { rm -f $@; echo "Failed to download $(1)"; exit 1; }
 endef
 
@@ -244,7 +244,7 @@ $(PACKAGES)/zlib-1.3.2.tar.gz: | dirs
 
 $(PACKAGES)/zlib.done: $(PACKAGES)/zlib-1.3.2.tar.gz
 	@rm -rf $(PACKAGES)/zlib-1.3.2 && mkdir -p $(PACKAGES)/zlib-1.3.2
-	@tar -xf $< -C $(PACKAGES)/zlib-1.3.2 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/zlib-1.3.2 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/zlib-1.3.2 && \
 		./configure --static --prefix="$(WORKSPACE)" && \
 		$(MAKE) -j $(MJOBS) && \
@@ -260,7 +260,7 @@ $(PACKAGES)/giflib-5.2.2.tar.gz: | dirs
 
 $(PACKAGES)/giflib.done: $(PACKAGES)/giflib-5.2.2.tar.gz
 	@rm -rf $(PACKAGES)/giflib-5.2.2 && mkdir -p $(PACKAGES)/giflib-5.2.2
-	@tar -xf $< -C $(PACKAGES)/giflib-5.2.2 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/giflib-5.2.2 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/giflib-5.2.2 && \
 		sed 's/$$(MAKE) -C doc//g' Makefile > Makefile.patched && \
 		rm Makefile && \
@@ -280,7 +280,7 @@ $(PACKAGES)/gettext-1.0.tar.gz: | dirs
 
 $(PACKAGES)/gettext.done: $(PACKAGES)/gettext-1.0.tar.gz
 	@rm -rf $(PACKAGES)/gettext-1.0 && mkdir -p $(PACKAGES)/gettext-1.0
-	@tar -xf $< -C $(PACKAGES)/gettext-1.0 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/gettext-1.0 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/gettext-1.0 && \
 		./configure --prefix="$(WORKSPACE)" --enable-static --disable-shared && \
 		$(MAKE) -j $(MJOBS) && \
@@ -292,7 +292,7 @@ $(PACKAGES)/openssl-3.6.1.tar.gz: | dirs
 
 $(PACKAGES)/openssl.done: $(PACKAGES)/openssl-3.6.1.tar.gz $(PACKAGES)/zlib.done
 	@rm -rf $(PACKAGES)/openssl-3.6.1 && mkdir -p $(PACKAGES)/openssl-3.6.1
-	@tar -xf $< -C $(PACKAGES)/openssl-3.6.1 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/openssl-3.6.1 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/openssl-3.6.1 && \
 		./Configure --prefix="$(WORKSPACE)" --openssldir="$(WORKSPACE)" --libdir="lib" \
 			--with-zlib-include="$(WORKSPACE)/include/" --with-zlib-lib="$(WORKSPACE)/lib" \
@@ -308,7 +308,7 @@ $(PACKAGES)/gmp-6.3.0.tar.xz: | dirs
 
 $(PACKAGES)/gmp.done: $(PACKAGES)/gmp-6.3.0.tar.xz
 	@rm -rf $(PACKAGES)/gmp-6.3.0 && mkdir -p $(PACKAGES)/gmp-6.3.0
-	@tar -xf $< -C $(PACKAGES)/gmp-6.3.0 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/gmp-6.3.0 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/gmp-6.3.0 && \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
 		$(MAKE) -j $(MJOBS) && \
@@ -320,7 +320,7 @@ $(PACKAGES)/nettle-3.10.2.tar.gz: | dirs
 
 $(PACKAGES)/nettle.done: $(PACKAGES)/nettle-3.10.2.tar.gz $(PACKAGES)/gmp.done
 	@rm -rf $(PACKAGES)/nettle-3.10.2 && mkdir -p $(PACKAGES)/nettle-3.10.2
-	@tar -xf $< -C $(PACKAGES)/nettle-3.10.2 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/nettle-3.10.2 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/nettle-3.10.2 && \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static \
 			--disable-openssl --disable-documentation --libdir="$(WORKSPACE)/lib" \
@@ -340,7 +340,7 @@ $(PACKAGES)/dav1d-1.5.3.tar.gz: | dirs
 
 $(PACKAGES)/dav1d.done: $(PACKAGES)/dav1d-1.5.3.tar.gz
 	@rm -rf $(PACKAGES)/dav1d-1.5.3 && mkdir -p $(PACKAGES)/dav1d-1.5.3
-	@tar -xf $< -C $(PACKAGES)/dav1d-1.5.3 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/dav1d-1.5.3 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/dav1d-1.5.3 && \
 		rm -rf build && mkdir -p build && \
 		$(if $(MACOS_SILICON),CFLAGS="-arch arm64") \
@@ -354,7 +354,7 @@ $(PACKAGES)/svtav1-4.0.1.tar.gz: | dirs
 
 $(PACKAGES)/svtav1.done: $(PACKAGES)/svtav1-4.0.1.tar.gz
 	@rm -rf $(PACKAGES)/svtav1-4.0.1 && mkdir -p $(PACKAGES)/svtav1-4.0.1
-	@tar -xf $< -C $(PACKAGES)/svtav1-4.0.1 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/svtav1-4.0.1 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/svtav1-4.0.1/Build/linux && \
 		cmake -DCMAKE_INSTALL_PREFIX="$(WORKSPACE)" -DENABLE_SHARED=off -DBUILD_SHARED_LIBS=OFF \
 			../.. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release && \
@@ -368,7 +368,7 @@ $(PACKAGES)/rav1e-0.8.1.tar.gz: | dirs
 
 $(PACKAGES)/rav1e.done: $(PACKAGES)/rav1e-0.8.1.tar.gz
 	@rm -rf $(PACKAGES)/rav1e-0.8.1 && mkdir -p $(PACKAGES)/rav1e-0.8.1
-	@tar -xf $< -C $(PACKAGES)/rav1e-0.8.1 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/rav1e-0.8.1 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/rav1e-0.8.1 && \
 		cargo install cargo-c && \
 		export RUSTFLAGS="-C target-cpu=native" && \
@@ -380,7 +380,7 @@ $(PACKAGES)/libvpx-1.16.0.tar.gz: | dirs
 
 $(PACKAGES)/libvpx.done: $(PACKAGES)/libvpx-1.16.0.tar.gz
 	@rm -rf $(PACKAGES)/libvpx-1.16.0 && mkdir -p $(PACKAGES)/libvpx-1.16.0
-	@tar -xf $< -C $(PACKAGES)/libvpx-1.16.0 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/libvpx-1.16.0 --strip-components 1 || { rm -f $<; exit 1; }
 ifeq ($(UNAME),Darwin)
 	cd $(PACKAGES)/libvpx-1.16.0 && \
 		sed "s/,--version-script//g" build/make/Makefile > build/make/Makefile.patched && \
@@ -397,7 +397,7 @@ $(PACKAGES)/av1-3.12.0.tar.gz: | dirs
 
 $(PACKAGES)/av1.done: $(PACKAGES)/av1-3.12.0.tar.gz
 	@rm -rf $(PACKAGES)/av1 && mkdir -p $(PACKAGES)/av1
-	@tar -xf $< -C $(PACKAGES)/av1
+	@tar -xf $< -C $(PACKAGES)/av1 || { rm -f $<; exit 1; }
 	rm -rf $(PACKAGES)/aom_build && mkdir -p $(PACKAGES)/aom_build
 	cd $(PACKAGES)/aom_build && \
 		cmake -DENABLE_TESTS=0 -DENABLE_EXAMPLES=0 \
@@ -413,7 +413,7 @@ $(PACKAGES)/zimg-3.0.6.tar.gz: | dirs
 
 $(PACKAGES)/zimg.done: $(PACKAGES)/zimg-3.0.6.tar.gz
 	@rm -rf $(PACKAGES)/zimg && mkdir -p $(PACKAGES)/zimg
-	@tar -xf $< -C $(PACKAGES)/zimg
+	@tar -xf $< -C $(PACKAGES)/zimg || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/zimg/zimg-release-3.0.6 && \
 		$(LIBTOOLIZE) -i -f -q && \
 		LIBTOOLIZE="$(LIBTOOLIZE)" ./autogen.sh --prefix="$(WORKSPACE)" && \
@@ -430,7 +430,7 @@ $(PACKAGES)/x264-0480cb05.tar.gz: | dirs
 
 $(PACKAGES)/x264.done: $(PACKAGES)/x264-0480cb05.tar.gz
 	@rm -rf $(PACKAGES)/x264-0480cb05 && mkdir -p $(PACKAGES)/x264-0480cb05
-	@tar -xf $< -C $(PACKAGES)/x264-0480cb05 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/x264-0480cb05 --strip-components 1 || { rm -f $<; exit 1; }
 ifeq ($(UNAME),Linux)
 	cd $(PACKAGES)/x264-0480cb05 && \
 		./configure --prefix="$(WORKSPACE)" --enable-static --enable-pic CXXFLAGS="-fPIC $(CXXFLAGS)" && \
@@ -447,7 +447,7 @@ $(PACKAGES)/x265-8be7dbf.tar.gz: | dirs
 
 $(PACKAGES)/x265.done: $(PACKAGES)/x265-8be7dbf.tar.gz
 	@rm -rf $(PACKAGES)/x265-8be7dbf && mkdir -p $(PACKAGES)/x265-8be7dbf
-	@tar -xf $< -C $(PACKAGES)/x265-8be7dbf --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/x265-8be7dbf --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/x265-8be7dbf/build/linux && \
 		rm -rf 8bit 10bit 12bit 2>/dev/null; \
 		mkdir -p 8bit 10bit 12bit && \
@@ -485,7 +485,7 @@ $(PACKAGES)/xvidcore-1.3.7.tar.gz: | dirs
 
 $(PACKAGES)/xvidcore.done: $(PACKAGES)/xvidcore-1.3.7.tar.gz
 	@rm -rf $(PACKAGES)/xvidcore-1.3.7 && mkdir -p $(PACKAGES)/xvidcore-1.3.7
-	@tar -xf $< -C $(PACKAGES)/xvidcore-1.3.7 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/xvidcore-1.3.7 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/xvidcore-1.3.7/build/generic && \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
 		$(MAKE) -j $(MJOBS) && \
@@ -499,7 +499,7 @@ $(PACKAGES)/vid.stab-1.1.1.tar.gz: | dirs
 
 $(PACKAGES)/vid_stab.done: $(PACKAGES)/vid.stab-1.1.1.tar.gz
 	@rm -rf $(PACKAGES)/vid.stab-1.1.1 && mkdir -p $(PACKAGES)/vid.stab-1.1.1
-	@tar -xf $< -C $(PACKAGES)/vid.stab-1.1.1 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/vid.stab-1.1.1 --strip-components 1 || { rm -f $<; exit 1; }
 ifdef MACOS_SILICON
 	cd $(PACKAGES)/vid.stab-1.1.1 && \
 		curl -L --silent -o fix_cmake_quoting.patch \
@@ -516,7 +516,7 @@ $(PACKAGES)/fdk-aac-2.0.3.tar.gz: | dirs
 
 $(PACKAGES)/fdk_aac.done: $(PACKAGES)/fdk-aac-2.0.3.tar.gz
 	@rm -rf $(PACKAGES)/fdk-aac-2.0.3 && mkdir -p $(PACKAGES)/fdk-aac-2.0.3
-	@tar -xf $< -C $(PACKAGES)/fdk-aac-2.0.3 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/fdk-aac-2.0.3 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/fdk-aac-2.0.3 && \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static --enable-pic && \
 		$(MAKE) -j $(MJOBS) && \
@@ -528,7 +528,7 @@ $(PACKAGES)/srt-1.5.4.tar.gz: | dirs
 
 $(PACKAGES)/srt.done: $(PACKAGES)/srt-1.5.4.tar.gz $(PACKAGES)/openssl.done
 	@rm -rf $(PACKAGES)/srt-1.5.4 && mkdir -p $(PACKAGES)/srt-1.5.4
-	@tar -xf $< -C $(PACKAGES)/srt-1.5.4 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/srt-1.5.4 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/srt-1.5.4 && \
 		export OPENSSL_ROOT_DIR="$(WORKSPACE)" && \
 		export OPENSSL_LIB_DIR="$(WORKSPACE)/lib" && \
@@ -547,7 +547,7 @@ $(PACKAGES)/zvbi-0.2.44.tar.gz: | dirs
 
 $(PACKAGES)/zvbi.done: $(PACKAGES)/zvbi-0.2.44.tar.gz $(PACKAGES)/libpng.done
 	@rm -rf $(PACKAGES)/zvbi-0.2.44 && mkdir -p $(PACKAGES)/zvbi-0.2.44
-	@tar -xf $< -C $(PACKAGES)/zvbi-0.2.44 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/zvbi-0.2.44 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/zvbi-0.2.44 && \
 		LIBTOOLIZE="$(LIBTOOLIZE)" ./autogen.sh --prefix="$(WORKSPACE)" && \
 		./configure CFLAGS="-I$(WORKSPACE)/include/libpng16 $(CFLAGS)" \
@@ -567,7 +567,7 @@ $(PACKAGES)/opencore-amr-0.1.6.tar.gz: | dirs
 
 $(PACKAGES)/opencore.done: $(PACKAGES)/opencore-amr-0.1.6.tar.gz
 	@rm -rf $(PACKAGES)/opencore-amr-0.1.6 && mkdir -p $(PACKAGES)/opencore-amr-0.1.6
-	@tar -xf $< -C $(PACKAGES)/opencore-amr-0.1.6 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/opencore-amr-0.1.6 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/opencore-amr-0.1.6 && \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
 		$(MAKE) -j $(MJOBS) && \
@@ -579,7 +579,7 @@ $(PACKAGES)/lame-3.100.tar.gz: | dirs
 
 $(PACKAGES)/lame.done: $(PACKAGES)/lame-3.100.tar.gz
 	@rm -rf $(PACKAGES)/lame-3.100 && mkdir -p $(PACKAGES)/lame-3.100
-	@tar -xf $< -C $(PACKAGES)/lame-3.100 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/lame-3.100 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/lame-3.100 && \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
 		$(MAKE) -j $(MJOBS) && \
@@ -591,7 +591,7 @@ $(PACKAGES)/opus-1.6.1.tar.gz: | dirs
 
 $(PACKAGES)/opus.done: $(PACKAGES)/opus-1.6.1.tar.gz
 	@rm -rf $(PACKAGES)/opus-1.6.1 && mkdir -p $(PACKAGES)/opus-1.6.1
-	@tar -xf $< -C $(PACKAGES)/opus-1.6.1 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/opus-1.6.1 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/opus-1.6.1 && \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
 		$(MAKE) -j $(MJOBS) && \
@@ -603,7 +603,7 @@ $(PACKAGES)/libogg-1.3.6.tar.xz: | dirs
 
 $(PACKAGES)/libogg.done: $(PACKAGES)/libogg-1.3.6.tar.xz
 	@rm -rf $(PACKAGES)/libogg-1.3.6 && mkdir -p $(PACKAGES)/libogg-1.3.6
-	@tar -xf $< -C $(PACKAGES)/libogg-1.3.6 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/libogg-1.3.6 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/libogg-1.3.6 && \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
 		$(MAKE) -j $(MJOBS) && \
@@ -615,7 +615,7 @@ $(PACKAGES)/libvorbis-1.3.7.tar.gz: | dirs
 
 $(PACKAGES)/libvorbis.done: $(PACKAGES)/libvorbis-1.3.7.tar.gz $(PACKAGES)/libogg.done
 	@rm -rf $(PACKAGES)/libvorbis-1.3.7 && mkdir -p $(PACKAGES)/libvorbis-1.3.7
-	@tar -xf $< -C $(PACKAGES)/libvorbis-1.3.7 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/libvorbis-1.3.7 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/libvorbis-1.3.7 && \
 		sed 's/-force_cpusubtype_ALL//g' configure.ac > configure.ac.patched && \
 		rm configure.ac && mv configure.ac.patched configure.ac && \
@@ -631,7 +631,7 @@ $(PACKAGES)/libtheora-1.2.0.tar.gz: | dirs
 
 $(PACKAGES)/libtheora.done: $(PACKAGES)/libtheora-1.2.0.tar.gz $(PACKAGES)/libogg.done $(PACKAGES)/libvorbis.done
 	@rm -rf $(PACKAGES)/libtheora-1.2.0 && mkdir -p $(PACKAGES)/libtheora-1.2.0
-	@tar -xf $< -C $(PACKAGES)/libtheora-1.2.0 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/libtheora-1.2.0 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/libtheora-1.2.0 && \
 		./configure --prefix="$(WORKSPACE)" \
 			--with-ogg-libraries="$(WORKSPACE)/lib" --with-ogg-includes="$(WORKSPACE)/include/" \
@@ -647,7 +647,7 @@ $(PACKAGES)/soxr-0.1.3.tar.xz: | dirs
 
 $(PACKAGES)/soxr.done: $(PACKAGES)/soxr-0.1.3.tar.xz
 	@rm -rf $(PACKAGES)/soxr-0.1.3 && mkdir -p $(PACKAGES)/soxr-0.1.3
-	@tar -xf $< -C $(PACKAGES)/soxr-0.1.3 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/soxr-0.1.3 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/soxr-0.1.3 && \
 		mkdir -p build && cd build && \
 		cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(WORKSPACE)" \
@@ -667,7 +667,7 @@ $(PACKAGES)/lv2-1.18.10.tar.xz: | dirs
 
 $(PACKAGES)/lv2.done: $(PACKAGES)/lv2-1.18.10.tar.xz
 	@rm -rf $(PACKAGES)/lv2-1.18.10 && mkdir -p $(PACKAGES)/lv2-1.18.10
-	@tar -xf $< -C $(PACKAGES)/lv2-1.18.10 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/lv2-1.18.10 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/lv2-1.18.10 && \
 		meson build --prefix="$(WORKSPACE)" --buildtype=release --default-library=static --libdir="$(WORKSPACE)/lib" && \
 		ninja -C build && \
@@ -679,7 +679,7 @@ $(PACKAGES)/serd-v0.32.8.tar.gz: | dirs
 
 $(PACKAGES)/serd.done: $(PACKAGES)/serd-v0.32.8.tar.gz
 	@rm -rf $(PACKAGES)/serd-v0.32.8 && mkdir -p $(PACKAGES)/serd-v0.32.8
-	@tar -xf $< -C $(PACKAGES)/serd-v0.32.8 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/serd-v0.32.8 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/serd-v0.32.8 && \
 		meson build --prefix="$(WORKSPACE)" --buildtype=release --default-library=static --libdir="$(WORKSPACE)/lib" && \
 		ninja -C build && \
@@ -691,7 +691,7 @@ $(PACKAGES)/pcre-8.45.tar.gz: | dirs
 
 $(PACKAGES)/pcre.done: $(PACKAGES)/pcre-8.45.tar.gz
 	@rm -rf $(PACKAGES)/pcre-8.45 && mkdir -p $(PACKAGES)/pcre-8.45
-	@tar -xf $< -C $(PACKAGES)/pcre-8.45 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/pcre-8.45 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/pcre-8.45 && \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
 		$(MAKE) -j $(MJOBS) && \
@@ -703,7 +703,7 @@ $(PACKAGES)/zix-v0.8.0.tar.gz: | dirs
 
 $(PACKAGES)/zix.done: $(PACKAGES)/zix-v0.8.0.tar.gz
 	@rm -rf $(PACKAGES)/zix-v0.8.0 && mkdir -p $(PACKAGES)/zix-v0.8.0
-	@tar -xf $< -C $(PACKAGES)/zix-v0.8.0 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/zix-v0.8.0 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/zix-v0.8.0 && \
 		meson setup build --prefix="$(WORKSPACE)" --buildtype=release --default-library=static --libdir="$(WORKSPACE)/lib" && \
 		cd build && \
@@ -717,7 +717,7 @@ $(PACKAGES)/sord-v0.16.22.tar.gz: | dirs
 
 $(PACKAGES)/sord.done: $(PACKAGES)/sord-v0.16.22.tar.gz $(PACKAGES)/serd.done $(PACKAGES)/zix.done
 	@rm -rf $(PACKAGES)/sord-v0.16.22 && mkdir -p $(PACKAGES)/sord-v0.16.22
-	@tar -xf $< -C $(PACKAGES)/sord-v0.16.22 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/sord-v0.16.22 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/sord-v0.16.22 && \
 		meson build --prefix="$(WORKSPACE)" --buildtype=release --default-library=static --libdir="$(WORKSPACE)/lib" && \
 		ninja -C build && \
@@ -729,7 +729,7 @@ $(PACKAGES)/sratom-v0.6.22.tar.gz: | dirs
 
 $(PACKAGES)/sratom.done: $(PACKAGES)/sratom-v0.6.22.tar.gz $(PACKAGES)/sord.done $(PACKAGES)/lv2.done
 	@rm -rf $(PACKAGES)/sratom-v0.6.22 && mkdir -p $(PACKAGES)/sratom-v0.6.22
-	@tar -xf $< -C $(PACKAGES)/sratom-v0.6.22 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/sratom-v0.6.22 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/sratom-v0.6.22 && \
 		meson build --prefix="$(WORKSPACE)" -Ddocs=disabled --buildtype=release --default-library=static --libdir="$(WORKSPACE)/lib" && \
 		ninja -C build && \
@@ -741,7 +741,7 @@ $(PACKAGES)/lilv-v0.26.4.tar.gz: | dirs
 
 $(PACKAGES)/lilv.done: $(PACKAGES)/lilv-v0.26.4.tar.gz $(PACKAGES)/sratom.done
 	@rm -rf $(PACKAGES)/lilv-v0.26.4 && mkdir -p $(PACKAGES)/lilv-v0.26.4
-	@tar -xf $< -C $(PACKAGES)/lilv-v0.26.4 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/lilv-v0.26.4 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/lilv-v0.26.4 && \
 		meson build --prefix="$(WORKSPACE)" -Ddocs=disabled --buildtype=release --default-library=static \
 			--libdir="$(WORKSPACE)/lib" -Dcpp_std=c++11 && \
@@ -761,7 +761,7 @@ $(PACKAGES)/tiff-4.7.1.tar.xz: | dirs
 
 $(PACKAGES)/libtiff.done: $(PACKAGES)/tiff-4.7.1.tar.xz $(PACKAGES)/zlib.done
 	@rm -rf $(PACKAGES)/tiff-4.7.1 && mkdir -p $(PACKAGES)/tiff-4.7.1
-	@tar -xf $< -C $(PACKAGES)/tiff-4.7.1 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/tiff-4.7.1 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/tiff-4.7.1 && \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static \
 			--disable-dependency-tracking --disable-lzma --disable-webp --disable-zstd --without-x && \
@@ -774,7 +774,7 @@ $(PACKAGES)/libpng-1.6.55.tar.gz: | dirs
 
 $(PACKAGES)/libpng.done: $(PACKAGES)/libpng-1.6.55.tar.gz $(PACKAGES)/zlib.done
 	@rm -rf $(PACKAGES)/libpng-1.6.55 && mkdir -p $(PACKAGES)/libpng-1.6.55
-	@tar -xf $< -C $(PACKAGES)/libpng-1.6.55 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/libpng-1.6.55 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/libpng-1.6.55 && \
 		LDFLAGS="$(LDFLAGS)" CPPFLAGS="$(CFLAGS)" \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
@@ -787,7 +787,7 @@ $(PACKAGES)/lcms2-2.18.tar.gz: | dirs
 
 $(PACKAGES)/lcms2.done: $(PACKAGES)/lcms2-2.18.tar.gz
 	@rm -rf $(PACKAGES)/lcms2-2.18 && mkdir -p $(PACKAGES)/lcms2-2.18
-	@tar -xf $< -C $(PACKAGES)/lcms2-2.18 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/lcms2-2.18 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/lcms2-2.18 && \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
 		$(MAKE) -j $(MJOBS) && \
@@ -799,7 +799,7 @@ $(PACKAGES)/libjxl-0.11.2.tar.gz: | dirs
 
 $(PACKAGES)/libjxl.done: $(PACKAGES)/libjxl-0.11.2.tar.gz $(PACKAGES)/lcms2.done
 	@rm -rf $(PACKAGES)/libjxl-0.11.2 && mkdir -p $(PACKAGES)/libjxl-0.11.2
-	@tar -xf $< -C $(PACKAGES)/libjxl-0.11.2 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/libjxl-0.11.2 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/libjxl-0.11.2 && \
 		sed "s/-ljxl_threads/-ljxl_threads @JPEGXL_THREADS_PUBLIC_LIBS@/g" lib/threads/libjxl_threads.pc.in > lib/threads/libjxl_threads.pc.in.patched && \
 		rm lib/threads/libjxl_threads.pc.in && mv lib/threads/libjxl_threads.pc.in.patched lib/threads/libjxl_threads.pc.in && \
@@ -822,7 +822,7 @@ $(PACKAGES)/libwebp-1.6.0.tar.gz: | dirs
 
 $(PACKAGES)/libwebp.done: $(PACKAGES)/libwebp-1.6.0.tar.gz
 	@rm -rf $(PACKAGES)/libwebp-1.6.0 && mkdir -p $(PACKAGES)/libwebp-1.6.0
-	@tar -xf $< -C $(PACKAGES)/libwebp-1.6.0 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/libwebp-1.6.0 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/libwebp-1.6.0 && \
 		rm -rf build && mkdir -p build && cd build && \
 		cmake -DCMAKE_INSTALL_PREFIX="$(WORKSPACE)" -DCMAKE_INSTALL_LIBDIR=lib \
@@ -843,7 +843,7 @@ $(PACKAGES)/SDL2-2.30.12.tar.gz: | dirs
 
 $(PACKAGES)/libsdl.done: $(PACKAGES)/SDL2-2.30.12.tar.gz
 	@rm -rf $(PACKAGES)/SDL2-2.30.12 && mkdir -p $(PACKAGES)/SDL2-2.30.12
-	@tar -xf $< -C $(PACKAGES)/SDL2-2.30.12 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/SDL2-2.30.12 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/SDL2-2.30.12 && \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
 		$(MAKE) -j $(MJOBS) && \
@@ -855,7 +855,7 @@ $(PACKAGES)/freetype-2.14.2.tar.xz: | dirs
 
 $(PACKAGES)/FreeType2.done: $(PACKAGES)/freetype-2.14.2.tar.xz
 	@rm -rf $(PACKAGES)/freetype-2.14.2 && mkdir -p $(PACKAGES)/freetype-2.14.2
-	@tar -xf $< -C $(PACKAGES)/freetype-2.14.2 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/freetype-2.14.2 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/freetype-2.14.2 && \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
 		$(MAKE) -j $(MJOBS) && \
@@ -867,7 +867,7 @@ $(PACKAGES)/vapoursynth-R73.tar.gz: | dirs
 
 $(PACKAGES)/VapourSynth.done: $(PACKAGES)/vapoursynth-R73.tar.gz
 	@rm -rf $(PACKAGES)/vapoursynth-R73 && mkdir -p $(PACKAGES)/vapoursynth-R73
-	@tar -xf $< -C $(PACKAGES)/vapoursynth-R73 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/vapoursynth-R73 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/vapoursynth-R73 && \
 		mkdir -p "$(WORKSPACE)/include/vapoursynth" && \
 		cp -r include/. "$(WORKSPACE)/include/vapoursynth/"
@@ -878,7 +878,7 @@ $(PACKAGES)/zeromq-4.3.5.tar.gz: | dirs
 
 $(PACKAGES)/libzmq.done: $(PACKAGES)/zeromq-4.3.5.tar.gz
 	@rm -rf $(PACKAGES)/zeromq-4.3.5 && mkdir -p $(PACKAGES)/zeromq-4.3.5
-	@tar -xf $< -C $(PACKAGES)/zeromq-4.3.5 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/zeromq-4.3.5 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/zeromq-4.3.5 && \
 		$(if $(filter Darwin,$(UNAME)),export XML_CATALOG_FILES=/usr/local/etc/xml/catalog &&) \
 		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
@@ -893,7 +893,7 @@ $(PACKAGES)/Vulkan-Headers-1.4.341.0.tar.gz: | dirs
 
 $(PACKAGES)/vulkan-headers.done: $(PACKAGES)/Vulkan-Headers-1.4.341.0.tar.gz
 	@rm -rf $(PACKAGES)/Vulkan-Headers-1.4.341.0 && mkdir -p $(PACKAGES)/Vulkan-Headers-1.4.341.0
-	@tar -xf $< -C $(PACKAGES)/Vulkan-Headers-1.4.341.0 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/Vulkan-Headers-1.4.341.0 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/Vulkan-Headers-1.4.341.0 && \
 		cmake -DCMAKE_INSTALL_PREFIX="$(WORKSPACE)" -B build/ && \
 		cd build/ && $(MAKE) install
@@ -904,7 +904,7 @@ $(PACKAGES)/glslang-16.2.0.tar.gz: | dirs
 
 $(PACKAGES)/glslang.done: $(PACKAGES)/glslang-16.2.0.tar.gz
 	@rm -rf $(PACKAGES)/glslang-16.2.0 && mkdir -p $(PACKAGES)/glslang-16.2.0
-	@tar -xf $< -C $(PACKAGES)/glslang-16.2.0 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/glslang-16.2.0 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/glslang-16.2.0 && \
 		./update_glslang_sources.py && \
 		cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF \
@@ -925,7 +925,7 @@ $(PACKAGES)/nv-codec-headers-13.0.19.0.tar.gz: | dirs
 
 $(PACKAGES)/nv-codec.done: $(PACKAGES)/nv-codec-headers-13.0.19.0.tar.gz
 	@rm -rf $(PACKAGES)/nv-codec-headers-13.0.19.0 && mkdir -p $(PACKAGES)/nv-codec-headers-13.0.19.0
-	@tar -xf $< -C $(PACKAGES)/nv-codec-headers-13.0.19.0 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/nv-codec-headers-13.0.19.0 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/nv-codec-headers-13.0.19.0 && \
 		$(MAKE) PREFIX="$(WORKSPACE)" && \
 		$(MAKE) PREFIX="$(WORKSPACE)" install
@@ -937,7 +937,7 @@ $(PACKAGES)/AMF-1.5.0.tar.gz: | dirs
 
 $(PACKAGES)/amf.done: $(PACKAGES)/AMF-1.5.0.tar.gz
 	@rm -rf $(PACKAGES)/AMF-1.5.0 && mkdir -p $(PACKAGES)/AMF-1.5.0
-	@tar -xf $< -C $(PACKAGES)/AMF-1.5.0
+	@tar -xf $< -C $(PACKAGES)/AMF-1.5.0 || { rm -f $<; exit 1; }
 	rm -rf "$(WORKSPACE)/include/AMF"
 	mkdir -p "$(WORKSPACE)/include/AMF"
 	cp -r "$(PACKAGES)/AMF-1.5.0/AMF-1.5.0/amf/public/include/"* "$(WORKSPACE)/include/AMF/"
@@ -948,7 +948,7 @@ $(PACKAGES)/OpenCL-Headers-2025.07.22.tar.gz: | dirs
 
 $(PACKAGES)/opencl-headers.done: $(PACKAGES)/OpenCL-Headers-2025.07.22.tar.gz
 	@rm -rf $(PACKAGES)/OpenCL-Headers-2025.07.22 && mkdir -p $(PACKAGES)/OpenCL-Headers-2025.07.22
-	@tar -xf $< -C $(PACKAGES)/OpenCL-Headers-2025.07.22 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/OpenCL-Headers-2025.07.22 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/OpenCL-Headers-2025.07.22 && \
 		cmake -DCMAKE_INSTALL_PREFIX="$(WORKSPACE)" -B build/ && \
 		cmake --build build --target install
@@ -959,7 +959,7 @@ $(PACKAGES)/OpenCL-ICD-Loader-2025.07.22.tar.gz: | dirs
 
 $(PACKAGES)/opencl-icd-loader.done: $(PACKAGES)/OpenCL-ICD-Loader-2025.07.22.tar.gz $(PACKAGES)/opencl-headers.done
 	@rm -rf $(PACKAGES)/OpenCL-ICD-Loader-2025.07.22 && mkdir -p $(PACKAGES)/OpenCL-ICD-Loader-2025.07.22
-	@tar -xf $< -C $(PACKAGES)/OpenCL-ICD-Loader-2025.07.22 --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/OpenCL-ICD-Loader-2025.07.22 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/OpenCL-ICD-Loader-2025.07.22 && \
 		cmake -DCMAKE_PREFIX_PATH="$(WORKSPACE)" -DCMAKE_INSTALL_PREFIX="$(WORKSPACE)" \
 			-DENABLE_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -B build/ && \
@@ -1025,7 +1025,7 @@ $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION).tar.gz: | dirs
 
 $(PACKAGES)/ffmpeg.done: $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION).tar.gz $(FFMPEG_DEPS)
 	@rm -rf $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION) && mkdir -p $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION)
-	@tar -xf $< -C $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION) --strip-components 1
+	@tar -xf $< -C $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION) --strip-components 1 || { rm -f $<; exit 1; }
 	@if [ -d "$(CWD)/.git" ]; then mv "$(CWD)/.git" "$(CWD)/.git.bak"; fi
 	cd $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION) && \
 		./configure $(CONFIGURE_OPTIONS) \
