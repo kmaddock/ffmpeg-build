@@ -287,7 +287,11 @@ $(PACKAGES)/gettext-1.0.tar.gz: | dirs
 
 $(PACKAGES)/gettext.done: $(PACKAGES)/gettext-1.0.tar.gz
 	@ACTUAL=$$($(SHA256CMD) "$<" | cut -d' ' -f1); \
-		echo "gettext tarball SHA256: $$ACTUAL (expected 85d99b79c981a404874c02e0342176cf75c7698e2b51fe41031cf6526d974f1a)"
+		if [ "$$ACTUAL" != "85d99b79c981a404874c02e0342176cf75c7698e2b51fe41031cf6526d974f1a" ]; then \
+			echo "gettext tarball SHA256 mismatch: $$ACTUAL (expected 85d99b79c981a404874c02e0342176cf75c7698e2b51fe41031cf6526d974f1a) - removing and retrying"; \
+			rm -f "$<"; \
+			$(MAKE) "$<"; \
+		fi
 	@rm -rf $(PACKAGES)/gettext-1.0 && mkdir -p $(PACKAGES)/gettext-1.0
 	@tar -xf $< -C $(PACKAGES)/gettext-1.0 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/gettext-1.0 && \
