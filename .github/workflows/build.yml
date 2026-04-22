@@ -27,9 +27,9 @@ jobs:
           path: |
             packages/*.done
             workspace
-          key: ffmpeg-macos-arm64-${{ hashFiles('Makefile') }}
+          key: ffmpeg-macos-arm64
           restore-keys: |
-            ffmpeg-macos-arm64-
+            ffmpeg-macos-arm64
 
       - name: Build ffmpeg
         run: make -j$(sysctl -n hw.ncpu) NONFREE_AND_GPL=1 NIGHTLY=1
@@ -50,7 +50,7 @@ jobs:
           path: |
             packages/*.done
             workspace
-          key: ffmpeg-macos-arm64-${{ hashFiles('Makefile') }}
+          key: ffmpeg-macos-arm64
 
       - name: Verify build
         run: |
