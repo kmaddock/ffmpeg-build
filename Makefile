@@ -513,7 +513,7 @@ ifdef MACOS_SILICON
 	cd $(PACKAGES)/vid.stab-1.1.1 && \
 		curl -L --silent -o fix_cmake_quoting.patch \
 			"https://raw.githubusercontent.com/Homebrew/formula-patches/5bf1a0e0cfe666ee410305cece9c9c755641bfdf/libvidstab/fix_cmake_quoting.patch" && \
-		patch -p1 < fix_cmake_quoting.patch
+		patch --forward -p1 < fix_cmake_quoting.patch || [ $$? -eq 1 ]
 endif
 	cd $(PACKAGES)/vid.stab-1.1.1 && \
 		cmake -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="$(WORKSPACE)" -DUSE_OMP=OFF -DENABLE_SHARED=off . && \
