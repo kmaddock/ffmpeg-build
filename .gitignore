@@ -26,3 +26,6 @@ libavutil/avconfig.h
 *.swp
 *.swo
 *~
+
+packages/
+workspace/
