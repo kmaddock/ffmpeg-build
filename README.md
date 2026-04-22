@@ -55,7 +55,7 @@ In the formula static build, libbluray is enabled only when `pkg-config --static
 
 ## Build artifacts
 
-The workflow installs the local formula directly from this repository path using `brew install --build-from-source --HEAD ./tap/Formula/ffmpeg-static.rb`. Compiled binaries are uploaded as a GitHub Actions artifact after each successful build.
+The workflow taps this repository path and builds using `brew install --build-from-source --HEAD kmaddock/ffmpeg-build/ffmpeg-static`. Compiled binaries are uploaded as a GitHub Actions artifact after each successful build.
 
 If the build fails, the workflow uploads Homebrew build logs (including any discovered `config.log` files) as a failure artifact.
 
@@ -65,8 +65,9 @@ If the build fails, the workflow uploads Homebrew build logs (including any disc
 git clone --recursive <repo-url>
 cd ffmpeg-build
 
-# Build directly from the local formula (HEAD)
-brew install --build-from-source --HEAD ./tap/Formula/ffmpeg-static.rb
+# Tap current repo path and build (HEAD)
+brew tap kmaddock/ffmpeg-build .
+brew install --build-from-source --HEAD kmaddock/ffmpeg-build/ffmpeg-static
 
 # Verify
 FFMPEG_PREFIX="$(brew --prefix ffmpeg-static)"
