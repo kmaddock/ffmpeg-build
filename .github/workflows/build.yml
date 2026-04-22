@@ -16,15 +16,11 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Add local Homebrew tap
-        run: |
-          brew tap homebrew/ffmpeg ./tap
-
       - name: Build ffmpeg-static formula (HEAD)
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1
         run: |
-          brew install --build-from-source --HEAD homebrew/ffmpeg/ffmpeg-static
+          brew install --build-from-source --HEAD ./tap/Formula/ffmpeg-static.rb
 
       - name: Collect failure logs
         if: failure()
