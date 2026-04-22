@@ -1,0 +1,28 @@
+# Build artifacts
+*.o
+*.a
+*.so
+*.dylib
+*.d
+*.pc
+
+# FFmpeg build output
+ffbuild/
+config.h
+config.mak
+config.asm
+config_components.h
+config_components.asm
+config.fate
+libavutil/avconfig.h
+
+# macOS
+.DS_Store
+._*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
