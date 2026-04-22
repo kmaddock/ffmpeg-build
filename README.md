@@ -22,7 +22,6 @@ The build uses the following `./configure` flags:
 --enable-gpl
 --enable-libaom
 --enable-libass
---enable-libbluray
 --enable-libdav1d
 --enable-libfreetype
 --enable-libgsm
@@ -57,6 +56,8 @@ The build uses the following `./configure` flags:
 ```
 
 On macOS, this produces an FFmpeg build configured for static external linking where available. A fully static binary is generally not possible because Apple system libraries are dynamically linked.
+
+In the GitHub Actions static workflow, libbluray is enabled only when `pkg-config --static libbluray` succeeds. If static libbluray dependencies are unavailable from Homebrew, the workflow disables libbluray and continues the build.
 
 ## Build artifacts
 
