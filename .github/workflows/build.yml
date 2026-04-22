@@ -23,6 +23,7 @@ jobs:
           HOMEBREW_NO_AUTO_UPDATE: 1
         run: |
           brew tap kmaddock/ffmpeg-build .
+          brew install --build-from-source openjpeg
           brew install --build-from-source --HEAD kmaddock/ffmpeg-build/ffmpeg-static
 
       - name: Collect failure logs
