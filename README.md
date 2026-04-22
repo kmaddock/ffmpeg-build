@@ -16,6 +16,8 @@ The build uses the following `./configure` flags:
 --cc=/usr/bin/clang
 --prefix=/opt/ffmpeg
 --extra-version=tessus
+--disable-shared
+--enable-static
 --enable-fontconfig
 --enable-gpl
 --enable-libaom
@@ -54,6 +56,8 @@ The build uses the following `./configure` flags:
 --disable-ffplay
 ```
 
+On macOS, this produces an FFmpeg build configured for static external linking where available. A fully static binary is generally not possible because Apple system libraries are dynamically linked.
+
 ## Build artifacts
 
 The workflow uploads the compiled `ffmpeg` and `ffprobe` binaries as a GitHub Actions artifact after each successful build.
@@ -68,7 +72,7 @@ cd ffmpeg-build
 brew install aom dav1d fontconfig freetype libgsm harfbuzz libass libbluray \
   libmodplug lame libmysofa opencore-amr openh264 openjpeg opus \
   rubberband shine snappy libsoxr speex theora twolame \
-  libvidstab libvmaf libvorbis libvpx webp x264 x265 xvid \
+  libvidstab libvmaf libvorbis libvpx webp libxml2 x264 x265 xvid \
   zimg zeromq pkg-config
 
 # Build
