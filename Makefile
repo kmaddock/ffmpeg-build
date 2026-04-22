@@ -1026,7 +1026,7 @@ $(PACKAGES)/ffmpeg.done: ffmpeg-pull $(FFMPEG_DEPS) | dirs
 			--pkg-config-flags="--static" \
 			--prefix="$(WORKSPACE)" \
 			--extra-version="$(FFMPEG_EXTRA_VERSION)" && \
-		$(MAKE) -j $(MJOBS) && \
+		$(MAKE) && \
 		$(MAKE) install
 	@if [ -d "$(CWD)/.git.bak" ]; then mv "$(CWD)/.git.bak" "$(CWD)/.git"; fi
 	@cd $(FFMPEG_SRCDIR) && echo "nightly-$$(git rev-parse --short HEAD)" > $@
@@ -1056,7 +1056,7 @@ $(PACKAGES)/ffmpeg.done: $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION).tar.gz $(F
 			--pkg-config-flags="--static" \
 			--prefix="$(WORKSPACE)" \
 			--extra-version="$(FFMPEG_EXTRA_VERSION)" && \
-		$(MAKE) -j $(MJOBS) && \
+		$(MAKE) && \
 		$(MAKE) install
 	@if [ -d "$(CWD)/.git.bak" ]; then mv "$(CWD)/.git.bak" "$(CWD)/.git"; fi
 	@echo "$(FFMPEG_VERSION)" > $@
