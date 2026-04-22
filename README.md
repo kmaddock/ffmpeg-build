@@ -27,7 +27,6 @@ The build uses the following `./configure` flags:
 --enable-libharfbuzz
 --enable-libmodplug
 --enable-libmp3lame
---enable-libmysofa
 --enable-libopencore-amrnb
 --enable-libopencore-amrwb
 --enable-libopenh264

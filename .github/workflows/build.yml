@@ -29,7 +29,6 @@ jobs:
             libbluray \
             libmodplug \
             lame \
-            libmysofa \
             opencore-amr \
             openh264 \
             openjpeg \
@@ -71,7 +70,6 @@ jobs:
             --enable-libharfbuzz \
             --enable-libmodplug \
             --enable-libmp3lame \
-            --enable-libmysofa \
             --enable-libopencore-amrnb \
             --enable-libopencore-amrwb \
             --enable-libopenh264 \
