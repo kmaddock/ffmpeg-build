@@ -725,7 +725,7 @@ $(PACKAGES)/zix.done: $(PACKAGES)/zix-v0.8.0.tar.gz
 	@rm -rf $(PACKAGES)/zix-v0.8.0 && mkdir -p $(PACKAGES)/zix-v0.8.0
 	@tar -xf $< -C $(PACKAGES)/zix-v0.8.0 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/zix-v0.8.0 && \
-		meson setup build --prefix="$(WORKSPACE)" $(MESON_OPTS) && \
+		meson setup build --prefix="$(WORKSPACE)" $(MESON_OPTS) -Dtests=disabled && \
 		cd build && \
 		meson configure -Dc_args="-march=native" -Dprefix="$(WORKSPACE)" -Dlibdir="$(WORKSPACE)/lib" && \
 		meson compile && \
