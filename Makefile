@@ -14,6 +14,8 @@ WORKSPACE := $(CWD)/workspace
 
 MJOBS ?= $(shell sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 4)
 
+MESON_OPTS := --buildtype=release --default-library=static --libdir="$(WORKSPACE)/lib" -Dcpp_std=c++11
+
 UNAME := $(shell uname -s)
 ARCH  := $(shell uname -m)
 
@@ -362,7 +364,7 @@ $(PACKAGES)/dav1d.done: $(PACKAGES)/dav1d-1.5.3.tar.gz
 	cd $(PACKAGES)/dav1d-1.5.3 && \
 		rm -rf build && mkdir -p build && \
 		$(if $(MACOS_SILICON),CFLAGS="-arch arm64") \
-		meson build --prefix="$(WORKSPACE)" --buildtype=release --default-library=static --libdir="$(WORKSPACE)/lib" && \
+		meson build --prefix="$(WORKSPACE)" $(MESON_OPTS) && \
 		ninja -C build && \
 		ninja -C build install
 	@echo "1.5.3" > $@
@@ -687,7 +689,7 @@ $(PACKAGES)/lv2.done: $(PACKAGES)/lv2-1.18.10.tar.xz
 	@rm -rf $(PACKAGES)/lv2-1.18.10 && mkdir -p $(PACKAGES)/lv2-1.18.10
 	@tar -xf $< -C $(PACKAGES)/lv2-1.18.10 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/lv2-1.18.10 && \
-		meson build --prefix="$(WORKSPACE)" --buildtype=release --default-library=static --libdir="$(WORKSPACE)/lib" && \
+		meson build --prefix="$(WORKSPACE)" $(MESON_OPTS) && \
 		ninja -C build && \
 		ninja -C build install
 	@echo "1.18.10" > $@
@@ -699,7 +701,7 @@ $(PACKAGES)/serd.done: $(PACKAGES)/serd-v0.32.8.tar.gz
 	@rm -rf $(PACKAGES)/serd-v0.32.8 && mkdir -p $(PACKAGES)/serd-v0.32.8
 	@tar -xf $< -C $(PACKAGES)/serd-v0.32.8 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/serd-v0.32.8 && \
-		meson build --prefix="$(WORKSPACE)" --buildtype=release --default-library=static --libdir="$(WORKSPACE)/lib" && \
+		meson build --prefix="$(WORKSPACE)" $(MESON_OPTS) && \
 		ninja -C build && \
 		ninja -C build install
 	@echo "0.32.8" > $@
@@ -723,7 +725,7 @@ $(PACKAGES)/zix.done: $(PACKAGES)/zix-v0.8.0.tar.gz
 	@rm -rf $(PACKAGES)/zix-v0.8.0 && mkdir -p $(PACKAGES)/zix-v0.8.0
 	@tar -xf $< -C $(PACKAGES)/zix-v0.8.0 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/zix-v0.8.0 && \
-		meson setup build --prefix="$(WORKSPACE)" --buildtype=release --default-library=static --libdir="$(WORKSPACE)/lib" && \
+		meson setup build --prefix="$(WORKSPACE)" $(MESON_OPTS) && \
 		cd build && \
 		meson configure -Dc_args="-march=native" -Dprefix="$(WORKSPACE)" -Dlibdir="$(WORKSPACE)/lib" && \
 		meson compile && \
@@ -737,7 +739,8 @@ $(PACKAGES)/sord.done: $(PACKAGES)/sord-v0.16.22.tar.gz $(PACKAGES)/serd.done $(
 	@rm -rf $(PACKAGES)/sord-v0.16.22 && mkdir -p $(PACKAGES)/sord-v0.16.22
 	@tar -xf $< -C $(PACKAGES)/sord-v0.16.22 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/sord-v0.16.22 && \
-		meson build --prefix="$(WORKSPACE)" --buildtype=release --default-library=static --libdir="$(WORKSPACE)/lib" && \
+		meson build --prefix="$(WORKSPACE)" $(MESON_OPTS) \
+			-Dtests=disabled -Ddocs=disabled && \
 		ninja -C build && \
 		ninja -C build install
 	@echo "0.16.22" > $@
@@ -749,7 +752,7 @@ $(PACKAGES)/sratom.done: $(PACKAGES)/sratom-v0.6.22.tar.gz $(PACKAGES)/sord.done
 	@rm -rf $(PACKAGES)/sratom-v0.6.22 && mkdir -p $(PACKAGES)/sratom-v0.6.22
 	@tar -xf $< -C $(PACKAGES)/sratom-v0.6.22 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/sratom-v0.6.22 && \
-		meson build --prefix="$(WORKSPACE)" -Ddocs=disabled --buildtype=release --default-library=static --libdir="$(WORKSPACE)/lib" && \
+		meson build --prefix="$(WORKSPACE)" $(MESON_OPTS) -Ddocs=disabled && \
 		ninja -C build && \
 		ninja -C build install
 	@echo "0.6.22" > $@
@@ -761,8 +764,7 @@ $(PACKAGES)/lilv.done: $(PACKAGES)/lilv-v0.26.4.tar.gz $(PACKAGES)/sratom.done
 	@rm -rf $(PACKAGES)/lilv-v0.26.4 && mkdir -p $(PACKAGES)/lilv-v0.26.4
 	@tar -xf $< -C $(PACKAGES)/lilv-v0.26.4 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/lilv-v0.26.4 && \
-		meson build --prefix="$(WORKSPACE)" -Ddocs=disabled --buildtype=release --default-library=static \
-			--libdir="$(WORKSPACE)/lib" -Dcpp_std=c++11 && \
+		meson build --prefix="$(WORKSPACE)" $(MESON_OPTS) -Ddocs=disabled && \
 		ninja -C build && \
 		ninja -C build install
 	@echo "0.26.4" > $@
