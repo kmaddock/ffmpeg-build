@@ -27,8 +27,9 @@ jobs:
           path: |
             packages
             workspace
-          key: ffmpeg-macos-arm64
+          key: ffmpeg-macos-arm64-${{ github.run_id }}
           restore-keys: |
+            ffmpeg-macos-arm64-
             ffmpeg-macos-arm64
 
       - name: Build ffmpeg
@@ -50,7 +51,7 @@ jobs:
           path: |
             packages
             workspace
-          key: ffmpeg-macos-arm64
+          key: ffmpeg-macos-arm64-${{ github.run_id }}
 
       - name: Verify build
         run: |
