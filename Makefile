@@ -86,6 +86,8 @@ FFMPEG_DEPS :=
 
 ifeq ($(UNAME),Darwin)
   CONFIGURE_OPTIONS += --enable-videotoolbox
+  CONFIGURE_OPTIONS += --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape
+  CONFIGURE_OPTIONS += --disable-xlib
 endif
 
 ifeq ($(SMALL),1)
