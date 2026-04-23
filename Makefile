@@ -880,7 +880,7 @@ $(PACKAGES)/FreeType2.done: $(PACKAGES)/freetype-2.14.2.tar.xz
 	@rm -rf $(PACKAGES)/freetype-2.14.2 && mkdir -p $(PACKAGES)/freetype-2.14.2
 	@tar -xf $< -C $(PACKAGES)/freetype-2.14.2 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/freetype-2.14.2 && \
-		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
+		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static --without-harfbuzz && \
 		$(MAKE) -j $(MJOBS) && \
 		$(MAKE) install
 	@echo "2.14.2" > $@
@@ -1006,38 +1006,57 @@ ifeq ($(UNAME),Darwin)
   endif
 endif
 
+# Common configure command (run from the source/build directory)
+FFMPEG_CONFIGURE_CMD = ./configure $(CONFIGURE_OPTIONS) \
+	--disable-debug \
+	--disable-shared \
+	--enable-pthreads \
+	--enable-static \
+	--enable-version3 \
+	--extra-cflags="$(CFLAGS)" \
+	--extra-ldexeflags="$(LDEXEFLAGS)" \
+	--extra-ldflags="$(LDFLAGS)" \
+	--extra-libs="$(EXTRALIBS)" \
+	--pkgconfigdir="$(WORKSPACE)/lib/pkgconfig" \
+	--pkg-config-flags="--static" \
+	--prefix="$(WORKSPACE)" \
+	--extra-version="$(FFMPEG_EXTRA_VERSION)"
+
+# Stamp file tracking configure args + script hash.
+# Timestamp only updates when content actually changes (cmp trick).
+.PHONY: FORCE
+$(PACKAGES)/ffmpeg.configure.stamp: FORCE | dirs
+	@{ printf '%s\n' '$(FFMPEG_CONFIGURE_CMD)'; \
+	   if [ -f "$(FFMPEG_SRCDIR)/configure" ]; then $(SHA256CMD) "$(FFMPEG_SRCDIR)/configure"; fi; \
+	} > $@.tmp
+	@cmp -s $@.tmp $@ 2>/dev/null || mv $@.tmp $@
+	@rm -f $@.tmp
+
 ifeq ($(NIGHTLY),1)
 
 # --- Nightly: shallow-clone HEAD of master ---
+
+# Ensure stamp runs after pull so configure script hash is current
+$(PACKAGES)/ffmpeg.configure.stamp: | ffmpeg-pull
+
 $(FFMPEG_SRCDIR)/.git:
 	@mkdir -p $(PACKAGES)
 	git clone --depth 1 https://github.com/FFmpeg/FFmpeg.git $(FFMPEG_SRCDIR)
 
-# Always re-pull on each build; .PHONY-like via the force target
 .PHONY: ffmpeg-pull
 ffmpeg-pull: $(FFMPEG_SRCDIR)/.git
 	cd $(FFMPEG_SRCDIR) && git pull --ff-only
 
-$(PACKAGES)/ffmpeg.done: ffmpeg-pull $(FFMPEG_DEPS) | dirs
+# Configure: re-runs when deps rebuild, args change, or configure script changes
+$(PACKAGES)/ffmpeg.configured: $(FFMPEG_DEPS) $(PACKAGES)/ffmpeg.configure.stamp | dirs
 	@if [ -d "$(CWD)/.git" ]; then mv "$(CWD)/.git" "$(CWD)/.git.bak"; fi
-	cd $(FFMPEG_SRCDIR) && \
-		./configure $(CONFIGURE_OPTIONS) \
-			--disable-debug \
-			--disable-shared \
-			--enable-pthreads \
-			--enable-static \
-			--enable-version3 \
-			--extra-cflags="$(CFLAGS)" \
-			--extra-ldexeflags="$(LDEXEFLAGS)" \
-			--extra-ldflags="$(LDFLAGS)" \
-			--extra-libs="$(EXTRALIBS)" \
-			--pkgconfigdir="$(WORKSPACE)/lib/pkgconfig" \
-			--pkg-config-flags="--static" \
-			--prefix="$(WORKSPACE)" \
-			--extra-version="$(FFMPEG_EXTRA_VERSION)" && \
-		$(MAKE) && \
-		$(MAKE) install
+	cd $(FFMPEG_SRCDIR) && $(FFMPEG_CONFIGURE_CMD)
 	@if [ -d "$(CWD)/.git.bak" ]; then mv "$(CWD)/.git.bak" "$(CWD)/.git"; fi
+	@touch $@
+
+# Build: ffmpeg-pull is PHONY so make always runs (incremental)
+$(PACKAGES)/ffmpeg.done: ffmpeg-pull $(PACKAGES)/ffmpeg.configured | dirs
+	cd $(FFMPEG_SRCDIR) && $(MAKE) && $(MAKE) install
 	@cd $(FFMPEG_SRCDIR) && echo "nightly-$$(git rev-parse --short HEAD)" > $@
 
 else
@@ -1046,28 +1065,18 @@ else
 $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION).tar.gz: | dirs
 	$(call download_file,https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n$(FFMPEG_VERSION).tar.gz,dd308201bb1239a1b73185f80c6b4121f4efdfa424a009ce544fd00bf736bb2e)
 
-$(PACKAGES)/ffmpeg.done: $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION).tar.gz $(FFMPEG_DEPS)
+# Configure: extract tarball and run configure
+$(PACKAGES)/ffmpeg.configured: $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION).tar.gz $(FFMPEG_DEPS) $(PACKAGES)/ffmpeg.configure.stamp
 	@rm -rf $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION) && mkdir -p $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION)
 	@tar -xf $< -C $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION) --strip-components 1 || { rm -f $<; exit 1; }
 	@if [ -d "$(CWD)/.git" ]; then mv "$(CWD)/.git" "$(CWD)/.git.bak"; fi
-	cd $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION) && \
-		./configure $(CONFIGURE_OPTIONS) \
-			--disable-debug \
-			--disable-shared \
-			--enable-pthreads \
-			--enable-static \
-			--enable-version3 \
-			--extra-cflags="$(CFLAGS)" \
-			--extra-ldexeflags="$(LDEXEFLAGS)" \
-			--extra-ldflags="$(LDFLAGS)" \
-			--extra-libs="$(EXTRALIBS)" \
-			--pkgconfigdir="$(WORKSPACE)/lib/pkgconfig" \
-			--pkg-config-flags="--static" \
-			--prefix="$(WORKSPACE)" \
-			--extra-version="$(FFMPEG_EXTRA_VERSION)" && \
-		$(MAKE) && \
-		$(MAKE) install
+	cd $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION) && $(FFMPEG_CONFIGURE_CMD)
 	@if [ -d "$(CWD)/.git.bak" ]; then mv "$(CWD)/.git.bak" "$(CWD)/.git"; fi
+	@touch $@
+
+# Build
+$(PACKAGES)/ffmpeg.done: $(PACKAGES)/ffmpeg.configured
+	cd $(PACKAGES)/FFmpeg-release-$(FFMPEG_VERSION) && $(MAKE) && $(MAKE) install
 	@echo "$(FFMPEG_VERSION)" > $@
 
 endif # NIGHTLY
