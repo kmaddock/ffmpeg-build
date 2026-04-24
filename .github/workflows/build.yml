@@ -12,8 +12,6 @@ on:
 jobs:
   build-linux-arm64:
     runs-on: ubuntu-24.04-arm
-    permissions:
-      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -90,28 +88,9 @@ jobs:
           path: artifacts/
           retention-days: 14
 
-      - name: Publish nightly release
-        if: github.event_name != 'pull_request'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mkdir -p release-assets
-          cp artifacts/ffmpeg release-assets/ffmpeg-linux-arm64
-          cp artifacts/ffprobe release-assets/ffprobe-linux-arm64
-          git tag -f nightly
-          git push origin -f nightly
-          gh release create nightly \
-            --title "Nightly Build" \
-            --notes "Automated nightly build. Commit: ${{ github.sha }}" \
-            --prerelease \
-            --latest=false \
-            release-assets/* 2>/dev/null || \
-          gh release upload nightly release-assets/* --clobber
 
   build-linux-arm64-shared:
     runs-on: ubuntu-24.04-arm
-    permissions:
-      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -227,27 +206,9 @@ jobs:
           path: artifacts/
           retention-days: 14
 
-      - name: Publish nightly release
-        if: github.event_name != 'pull_request'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mkdir -p release-assets
-          (cd artifacts && tar -czf ../release-assets/ffmpeg-linux-arm64-shared.tar.gz bin/ lib/ include/)
-          git tag -f nightly
-          git push origin -f nightly
-          gh release create nightly \
-            --title "Nightly Build" \
-            --notes "Automated nightly build. Commit: ${{ github.sha }}" \
-            --prerelease \
-            --latest=false \
-            release-assets/* 2>/dev/null || \
-          gh release upload nightly release-assets/* --clobber
 
   build:
     runs-on: macos-14
-    permissions:
-      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -319,20 +280,4 @@ jobs:
           path: artifacts/
           retention-days: 14
 
-      - name: Publish nightly release
-        if: github.event_name != 'pull_request'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mkdir -p release-assets
-          cp artifacts/ffmpeg release-assets/ffmpeg-macos-arm64
-          cp artifacts/ffprobe release-assets/ffprobe-macos-arm64
-          git tag -f nightly
-          git push origin -f nightly
-          gh release create nightly \
-            --title "Nightly Build" \
-            --notes "Automated nightly build. Commit: ${{ github.sha }}" \
-            --prerelease \
-            --latest=false \
-            release-assets/* 2>/dev/null || \
-          gh release upload nightly release-assets/* --clobber
+
