@@ -116,7 +116,7 @@ jobs:
             ocl-icd-opencl-dev
 
       - name: Clone FFmpeg
-        run: git clone --depth 1 https://github.com/FFmpeg/FFmpeg.git ffmpeg-src
+        run: git clone --depth 1 https://github.com/Kwiboo/FFmpeg.git ffmpeg-src
 
       - name: Configure FFmpeg
         run: |
