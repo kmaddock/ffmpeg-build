@@ -1,4 +1,4 @@
-name: Build FFmpeg (macOS ARM)
+name: Build FFmpeg
 
 on:
   push:
@@ -10,6 +10,84 @@ on:
   workflow_dispatch:
 
 jobs:
+  build-linux-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y \
+            build-essential pkg-config nasm yasm \
+            autoconf automake libtool cmake \
+            meson ninja-build python3-setuptools rustc cargo \
+            libdrm-dev
+
+      - name: Restore build cache
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            packages
+            workspace
+          key: ffmpeg-linux-arm64-${{ github.run_id }}
+          restore-keys: |
+            ffmpeg-linux-arm64-
+            ffmpeg-linux-arm64
+
+      - name: Build ffmpeg
+        run: make -j$(nproc) NONFREE_AND_GPL=1 NIGHTLY=1
+
+      - name: Collect failure logs
+        if: failure()
+        run: |
+          mkdir -p failure-logs
+          find . -name config.log -exec cp {} failure-logs/ \; || true
+          if [ -d "workspace" ]; then
+            cp -R workspace failure-logs/workspace
+          fi
+
+      - name: Save build cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            packages
+            workspace
+          key: ffmpeg-linux-arm64-${{ github.run_id }}
+
+      - name: Verify build
+        run: |
+          ./workspace/bin/ffmpeg -version
+          ./workspace/bin/ffprobe -version
+          ./workspace/bin/ffmpeg -buildconf
+          echo "=== ffmpeg shared libs ==="
+          ldd ./workspace/bin/ffmpeg
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p artifacts
+          cp ./workspace/bin/ffmpeg artifacts/
+          cp ./workspace/bin/ffprobe artifacts/
+
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-linux-arm64-build-logs
+          path: failure-logs/
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-linux-arm64
+          path: artifacts/
+          retention-days: 14
+
   build:
     runs-on: macos-14
     steps:

@@ -201,6 +201,7 @@ ifeq ($(UNAME),Linux)
   CONFIGURE_OPTIONS += --enable-amf
   FFMPEG_DEPS += $(PACKAGES)/opencl-icd-loader.done
   CONFIGURE_OPTIONS += --enable-opencl
+  CONFIGURE_OPTIONS += --enable-v4l2-request --enable-libdrm
 endif
 
 # =============================================================================
