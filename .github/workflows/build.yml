@@ -12,6 +12,8 @@ on:
 jobs:
   build-linux-arm64:
     runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,7 +25,7 @@ jobs:
             build-essential pkg-config nasm yasm \
             autoconf automake libtool cmake \
             meson ninja-build python3-setuptools rustc cargo \
-            libdrm-dev
+            libdrm-dev gettext
 
       - name: Restore build cache
         id: cache
@@ -88,8 +90,165 @@ jobs:
           path: artifacts/
           retention-days: 14
 
+      - name: Publish nightly release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p release-assets
+          cp artifacts/ffmpeg release-assets/ffmpeg-linux-arm64
+          cp artifacts/ffprobe release-assets/ffprobe-linux-arm64
+          git tag -f nightly
+          git push origin -f nightly
+          gh release create nightly \
+            --title "Nightly Build" \
+            --notes "Automated nightly build. Commit: ${{ github.sha }}" \
+            --prerelease \
+            --latest=false \
+            release-assets/* 2>/dev/null || \
+          gh release upload nightly release-assets/* --clobber
+
+  build-linux-arm64-shared:
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Enable universe repository
+        run: sudo add-apt-repository universe -y
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y \
+            build-essential pkg-config git nasm yasm \
+            libaom-dev libdav1d-dev libsvtav1-dev libvpx-dev librav1e-dev \
+            libx264-dev libx265-dev libxvidcore-dev \
+            libmp3lame-dev libopus-dev libvorbis-dev libtheora-dev libogg-dev \
+            libopencore-amrnb-dev libopencore-amrwb-dev \
+            libsoxr-dev libzimg-dev libjxl-dev libwebp-dev \
+            libfreetype6-dev libzmq3-dev \
+            libssl-dev libfdk-aac-dev libsrt-openssl-dev \
+            libvidstab-dev libzvbi-dev \
+            liblilv-dev glslang-tools libglslang-dev \
+            libvulkan-dev libdrm-dev libv4l-dev \
+            ocl-icd-opencl-dev
+
+      - name: Clone FFmpeg
+        run: git clone --depth 1 https://github.com/FFmpeg/FFmpeg.git ffmpeg-src
+
+      - name: Configure FFmpeg
+        run: |
+          cd ffmpeg-src
+          ./configure \
+            --prefix="${GITHUB_WORKSPACE}/install" \
+            --enable-shared \
+            --disable-static \
+            --disable-debug \
+            --enable-pthreads \
+            --enable-version3 \
+            --enable-nonfree \
+            --enable-gpl \
+            --enable-libsvtav1 \
+            --enable-libvpx \
+            --enable-libaom \
+            --enable-libzimg \
+            --enable-libopencore_amrnb \
+            --enable-libopencore_amrwb \
+            --enable-libmp3lame \
+            --enable-libopus \
+            --enable-libvorbis \
+            --enable-libtheora \
+            --enable-libsoxr \
+            --enable-libjxl \
+            --enable-libwebp \
+            --enable-libfreetype \
+            --enable-libzmq \
+            --enable-vulkan \
+            --enable-libglslang \
+            --enable-libdav1d \
+            --enable-librav1e \
+            --enable-openssl \
+            --enable-libx264 \
+            --enable-libx265 \
+            --enable-libxvid \
+            --enable-libvidstab \
+            --enable-libfdk-aac \
+            --enable-libsrt \
+            --enable-libzvbi \
+            --enable-lv2 \
+            --disable-ffnvcodec \
+            --enable-opencl \
+            --enable-v4l2-request \
+            --enable-libdrm
+
+      - name: Build FFmpeg
+        run: |
+          cd ffmpeg-src
+          make -j$(nproc)
+          make install
+
+      - name: Collect failure logs
+        if: failure()
+        run: |
+          mkdir -p failure-logs
+          find ffmpeg-src -name config.log -exec cp {} failure-logs/ \; || true
+
+      - name: Verify build
+        run: |
+          ./install/bin/ffmpeg -version
+          ./install/bin/ffprobe -version
+          ./install/bin/ffmpeg -buildconf
+          echo "=== ffmpeg shared libs ==="
+          ldd ./install/bin/ffmpeg
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p artifacts/bin artifacts/lib artifacts/include
+          cp install/bin/ffmpeg install/bin/ffprobe artifacts/bin/
+          cp -r install/lib/libav* install/lib/libsw* install/lib/libpostproc* artifacts/lib/ 2>/dev/null || true
+          cp -r install/lib/pkgconfig artifacts/lib/ 2>/dev/null || true
+          cp -r install/include/libav* install/include/libsw* install/include/libpostproc* artifacts/include/ 2>/dev/null || true
+
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-linux-arm64-shared-build-logs
+          path: failure-logs/
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-linux-arm64-shared
+          path: artifacts/
+          retention-days: 14
+
+      - name: Publish nightly release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p release-assets
+          (cd artifacts && tar -czf ../release-assets/ffmpeg-linux-arm64-shared.tar.gz bin/ lib/ include/)
+          git tag -f nightly
+          git push origin -f nightly
+          gh release create nightly \
+            --title "Nightly Build" \
+            --notes "Automated nightly build. Commit: ${{ github.sha }}" \
+            --prerelease \
+            --latest=false \
+            release-assets/* 2>/dev/null || \
+          gh release upload nightly release-assets/* --clobber
+
   build:
     runs-on: macos-14
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -160,3 +319,21 @@ jobs:
           name: ffmpeg-macos-arm64
           path: artifacts/
           retention-days: 14
+
+      - name: Publish nightly release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p release-assets
+          cp artifacts/ffmpeg release-assets/ffmpeg-macos-arm64
+          cp artifacts/ffprobe release-assets/ffprobe-macos-arm64
+          git tag -f nightly
+          git push origin -f nightly
+          gh release create nightly \
+            --title "Nightly Build" \
+            --notes "Automated nightly build. Commit: ${{ github.sha }}" \
+            --prerelease \
+            --latest=false \
+            release-assets/* 2>/dev/null || \
+          gh release upload nightly release-assets/* --clobber
