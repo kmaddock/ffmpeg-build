@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-linux-arm64:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-latest-arm
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -90,7 +90,7 @@ jobs:
 
 
   build-linux-arm64-shared:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-latest-arm
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -111,7 +111,7 @@ jobs:
             libfreetype6-dev libzmq3-dev \
             libssl-dev libfdk-aac-dev libsrt-openssl-dev \
             libvidstab-dev libzvbi-dev \
-            liblilv-dev glslang-tools \
+            liblilv-dev glslang-tools gettext \
             libvulkan-dev libdrm-dev libv4l-dev \
             ocl-icd-opencl-dev
 
