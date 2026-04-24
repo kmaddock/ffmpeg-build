@@ -132,7 +132,7 @@ jobs:
             libfreetype6-dev libzmq3-dev \
             libssl-dev libfdk-aac-dev libsrt-openssl-dev \
             libvidstab-dev libzvbi-dev \
-            liblilv-dev glslang-tools libglslang-dev \
+            liblilv-dev glslang-tools \
             libvulkan-dev libdrm-dev libv4l-dev \
             ocl-icd-opencl-dev
 
@@ -167,7 +167,6 @@ jobs:
             --enable-libfreetype \
             --enable-libzmq \
             --enable-vulkan \
-            --enable-libglslang \
             --enable-libdav1d \
             --enable-librav1e \
             --enable-openssl \
