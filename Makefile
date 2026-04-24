@@ -416,7 +416,7 @@ endif
 	@echo "1.16.0" > $@
 
 $(PACKAGES)/av1-3.12.0.tar.gz: | dirs
-	$(call download_file,https://aomedia.googlesource.com/aom/+archive/refs/tags/v3.12.0.tar.gz,0f815383162b62191e2b758e7c2aa926620e0aef94ae9b6d4aff0d007886979c)
+	$(call download_file,https://aomedia.googlesource.com/aom/+archive/refs/tags/v3.12.0.tar.gz)
 
 $(PACKAGES)/av1.done: $(PACKAGES)/av1-3.12.0.tar.gz
 	@rm -rf $(PACKAGES)/av1 && mkdir -p $(PACKAGES)/av1
