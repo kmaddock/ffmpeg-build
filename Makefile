@@ -212,7 +212,7 @@ endif
 SHA256CMD := $(shell command -v sha256sum 2>/dev/null || echo "shasum -a 256")
 
 define download_file
-	curl -L --silent --fail --retry 2 --retry-delay 5 -o $@ "$(1)"
+	curl -L --silent --fail --retry 5 --retry-delay 10 -o $@ "$(1)"
 	@[ -s $@ ] || { rm -f $@; echo "Failed to download $(1)"; exit 1; }
 	$(if $(strip $(2)),@ACTUAL=$$($(SHA256CMD) "$@" | cut -d' ' -f1); \
 		if [ "$$ACTUAL" != "$(strip $(2))" ]; then \
