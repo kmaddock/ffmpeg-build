@@ -202,6 +202,7 @@ ifeq ($(UNAME),Linux)
   FFMPEG_DEPS += $(PACKAGES)/opencl-icd-loader.done
   CONFIGURE_OPTIONS += --enable-opencl
   CONFIGURE_OPTIONS += --enable-v4l2-request --enable-libdrm
+  CONFIGURE_OPTIONS += --enable-libudev
 endif
 
 # =============================================================================
@@ -1042,7 +1043,11 @@ $(PACKAGES)/ffmpeg.configure.stamp: | ffmpeg-pull
 
 $(FFMPEG_SRCDIR)/.git:
 	@mkdir -p $(PACKAGES)
+ifeq ($(UNAME),Linux)
+	git clone --depth 1 https://github.com/Kwiboo/FFmpeg.git $(FFMPEG_SRCDIR)
+else
 	git clone --depth 1 https://github.com/FFmpeg/FFmpeg.git $(FFMPEG_SRCDIR)
+endif
 
 .PHONY: ffmpeg-pull
 ffmpeg-pull: $(FFMPEG_SRCDIR)/.git

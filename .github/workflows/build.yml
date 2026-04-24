@@ -23,7 +23,7 @@ jobs:
             build-essential pkg-config nasm yasm \
             autoconf automake libtool cmake \
             meson ninja-build python3-setuptools rustc cargo \
-            libdrm-dev gettext
+            libdrm-dev gettext libudev-dev
 
       - name: Restore build cache
         id: cache
