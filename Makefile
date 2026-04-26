@@ -401,7 +401,7 @@ $(PACKAGES)/av1.done: $(PACKAGES)/av1-3.12.0.tar.gz
 $(PACKAGES)/zimg-3.0.6.tar.gz: | dirs
 	$(call download_file,https://github.com/sekrit-twc/zimg/archive/refs/tags/release-3.0.6.tar.gz,be89390f13a5c9b2388ce0f44a5e89364a20c1c57ce46d382b1fcc3967057577)
 
-$(PACKAGES)/zimg.done: $(PACKAGES)/zimg-3.0.6.tar.gz
+$(PACKAGES)/zimg.done: $(PACKAGES)/zimg-3.0.6.tar.gz $(PACKAGES)/gettext.done
 	@rm -rf $(PACKAGES)/zimg && mkdir -p $(PACKAGES)/zimg
 	@tar -xf $< -C $(PACKAGES)/zimg || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/zimg/zimg-release-3.0.6 && \
@@ -538,7 +538,7 @@ endif
 $(PACKAGES)/zvbi-0.2.44.tar.gz: | dirs
 	$(call download_file,https://github.com/zapping-vbi/zvbi/archive/refs/tags/v0.2.44.tar.gz,bca620ab670328ad732d161e4ce8d9d9fc832533cb7440e98c50e112b805ac5e)
 
-$(PACKAGES)/zvbi.done: $(PACKAGES)/zvbi-0.2.44.tar.gz $(PACKAGES)/libpng.done
+$(PACKAGES)/zvbi.done: $(PACKAGES)/zvbi-0.2.44.tar.gz $(PACKAGES)/libpng.done $(PACKAGES)/gettext.done
 	@rm -rf $(PACKAGES)/zvbi-0.2.44 && mkdir -p $(PACKAGES)/zvbi-0.2.44
 	@tar -xf $< -C $(PACKAGES)/zvbi-0.2.44 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/zvbi-0.2.44 && \
@@ -604,7 +604,7 @@ $(PACKAGES)/libogg.done: $(PACKAGES)/libogg-1.3.6.tar.xz
 $(PACKAGES)/libvorbis-1.3.7.tar.gz: | dirs
 	$(call download_file,https://ftp.osuosl.org/pub/xiph/releases/vorbis/libvorbis-1.3.7.tar.gz,0e982409a9c3fc82ee06e08205b1355e5c6aa4c36bca58146ef399621b0ce5ab)
 
-$(PACKAGES)/libvorbis.done: $(PACKAGES)/libvorbis-1.3.7.tar.gz $(PACKAGES)/libogg.done
+$(PACKAGES)/libvorbis.done: $(PACKAGES)/libvorbis-1.3.7.tar.gz $(PACKAGES)/libogg.done $(PACKAGES)/gettext.done
 	@rm -rf $(PACKAGES)/libvorbis-1.3.7 && mkdir -p $(PACKAGES)/libvorbis-1.3.7
 	@tar -xf $< -C $(PACKAGES)/libvorbis-1.3.7 --strip-components 1 || { rm -f $<; exit 1; }
 	cd $(PACKAGES)/libvorbis-1.3.7 && \
