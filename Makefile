@@ -201,7 +201,6 @@ ifeq ($(UNAME),Linux)
   CONFIGURE_OPTIONS += --enable-opencl
   CONFIGURE_OPTIONS += --enable-v4l2-request --enable-libdrm
   CONFIGURE_OPTIONS += --enable-libudev
-  CONFIGURE_OPTIONS += --enable-postproc
 endif
 
 # =============================================================================
