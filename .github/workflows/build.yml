@@ -119,15 +119,6 @@ jobs:
       - name: Clone FFmpeg
         run: git clone --depth 1 https://github.com/Kwiboo/FFmpeg.git ffmpeg-src
 
-      - name: Merge FFmpeg source plugins
-        run: |
-          cd ffmpeg-src
-          git fetch --unshallow
-          git config user.email "ci@localhost"
-          git config user.name "CI"
-          sed -i 's/git pull --no-rebase/git pull --no-rebase --allow-unrelated-histories/' tools/merge-all-source-plugins
-          tools/merge-all-source-plugins tools/source-plugins.txt
-
       - name: Configure FFmpeg
         run: |
           cd ffmpeg-src
