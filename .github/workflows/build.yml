@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-linux-arm64:
-    runs-on: ubuntu-latest-arm
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,7 +38,7 @@ jobs:
             ffmpeg-linux-arm64
 
       - name: Build ffmpeg
-        run: make -j$(nproc) NONFREE_AND_GPL=1 NIGHTLY=1
+        run: make -j$(nproc) NIGHTLY=1
 
       - name: Collect failure logs
         if: failure()
@@ -90,7 +90,7 @@ jobs:
 
 
   build-linux-arm64-shared:
-    runs-on: ubuntu-latest-arm
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -109,7 +109,7 @@ jobs:
             libopencore-amrnb-dev libopencore-amrwb-dev \
             libsoxr-dev libzimg-dev libjxl-dev libwebp-dev \
             libfreetype6-dev libzmq3-dev \
-            libssl-dev libfdk-aac-dev libsrt-openssl-dev \
+            libssl-dev libsrt-openssl-dev \
             libvidstab-dev libzvbi-dev \
             liblilv-dev glslang-tools gettext \
             libvulkan-dev libdrm-dev libv4l-dev \
@@ -128,7 +128,6 @@ jobs:
             --disable-debug \
             --enable-pthreads \
             --enable-version3 \
-            --enable-nonfree \
             --enable-gpl \
             --enable-libsvtav1 \
             --enable-libvpx \
@@ -153,7 +152,6 @@ jobs:
             --enable-libx265 \
             --enable-libxvid \
             --enable-libvidstab \
-            --enable-libfdk-aac \
             --enable-libsrt \
             --enable-libzvbi \
             --enable-lv2 \
@@ -230,7 +228,7 @@ jobs:
             ffmpeg-macos-arm64
 
       - name: Build ffmpeg
-        run: make -j$(sysctl -n hw.ncpu) NONFREE_AND_GPL=1 NIGHTLY=1
+        run: make -j$(sysctl -n hw.ncpu) NIGHTLY=1
 
       - name: Collect failure logs
         if: failure()
@@ -280,4 +278,55 @@ jobs:
           path: artifacts/
           retention-days: 14
 
+
+  publish-nightly:
+    needs: [build-linux-arm64, build-linux-arm64-shared, build]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download linux-arm64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ffmpeg-linux-arm64
+          path: artifacts/linux-arm64
+
+      - name: Download linux-arm64-shared artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ffmpeg-linux-arm64-shared
+          path: artifacts/linux-arm64-shared
+
+      - name: Download macos-arm64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ffmpeg-macos-arm64
+          path: artifacts/macos-arm64
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release
+          chmod +x artifacts/linux-arm64/ffmpeg artifacts/linux-arm64/ffprobe
+          cp artifacts/linux-arm64/ffmpeg release/ffmpeg-linux-arm64
+          cp artifacts/linux-arm64/ffprobe release/ffprobe-linux-arm64
+          tar -czf release/ffmpeg-linux-arm64-shared.tar.gz -C artifacts/linux-arm64-shared .
+          chmod +x artifacts/macos-arm64/ffmpeg artifacts/macos-arm64/ffprobe
+          cp artifacts/macos-arm64/ffmpeg release/ffmpeg-macos-arm64
+          cp artifacts/macos-arm64/ffprobe release/ffprobe-macos-arm64
+
+      - name: Delete existing nightly release
+        run: gh release delete nightly --yes --cleanup-tag || true
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Publish nightly release
+        run: |
+          gh release create nightly \
+            --prerelease \
+            --title "Nightly Build" \
+            --notes "Built from ${{ github.sha }} · $(date -u '+%Y-%m-%d %H:%M UTC')" \
+            release/*
+        env:
+          GH_TOKEN: ${{ github.token }}
 

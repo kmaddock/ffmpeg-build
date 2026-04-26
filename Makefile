@@ -154,28 +154,26 @@ ifdef HAS_CARGO
   CONFIGURE_OPTIONS += --enable-librav1e
 endif
 
+CONFIGURE_OPTIONS += --enable-gpl
+FFMPEG_DEPS += $(PACKAGES)/gettext.done
+FFMPEG_DEPS += $(PACKAGES)/openssl.done
+CONFIGURE_OPTIONS += --enable-openssl
+FFMPEG_DEPS += $(PACKAGES)/x264.done
+CONFIGURE_OPTIONS += --enable-libx264
+FFMPEG_DEPS += $(PACKAGES)/x265.done
+CONFIGURE_OPTIONS += --enable-libx265
+FFMPEG_DEPS += $(PACKAGES)/xvidcore.done
+CONFIGURE_OPTIONS += --enable-libxvid
+FFMPEG_DEPS += $(PACKAGES)/vid_stab.done
+CONFIGURE_OPTIONS += --enable-libvidstab
+FFMPEG_DEPS += $(PACKAGES)/srt.done
+CONFIGURE_OPTIONS += --enable-libsrt
+FFMPEG_DEPS += $(PACKAGES)/zvbi.done
+CONFIGURE_OPTIONS += --enable-libzvbi
 ifeq ($(NONFREE_AND_GPL),1)
-  CONFIGURE_OPTIONS += --enable-nonfree --enable-gpl
-  FFMPEG_DEPS += $(PACKAGES)/gettext.done
-  FFMPEG_DEPS += $(PACKAGES)/openssl.done
-  CONFIGURE_OPTIONS += --enable-openssl
-  FFMPEG_DEPS += $(PACKAGES)/x264.done
-  CONFIGURE_OPTIONS += --enable-libx264
-  FFMPEG_DEPS += $(PACKAGES)/x265.done
-  CONFIGURE_OPTIONS += --enable-libx265
-  FFMPEG_DEPS += $(PACKAGES)/xvidcore.done
-  CONFIGURE_OPTIONS += --enable-libxvid
-  FFMPEG_DEPS += $(PACKAGES)/vid_stab.done
-  CONFIGURE_OPTIONS += --enable-libvidstab
+  CONFIGURE_OPTIONS += --enable-nonfree
   FFMPEG_DEPS += $(PACKAGES)/fdk_aac.done
   CONFIGURE_OPTIONS += --enable-libfdk-aac
-  FFMPEG_DEPS += $(PACKAGES)/srt.done
-  CONFIGURE_OPTIONS += --enable-libsrt
-  FFMPEG_DEPS += $(PACKAGES)/zvbi.done
-  CONFIGURE_OPTIONS += --enable-libzvbi
-else
-  FFMPEG_DEPS += $(PACKAGES)/gmp.done
-  FFMPEG_DEPS += $(PACKAGES)/nettle.done
 endif
 
 ifneq ($(DISABLE_LV2),1)
@@ -283,10 +281,8 @@ $(PACKAGES)/giflib.done: $(PACKAGES)/giflib-5.2.2.tar.gz
 	@echo "5.2.2" > $@
 
 # =============================================================================
-# TLS / crypto (conditional)
+# TLS / crypto
 # =============================================================================
-
-ifeq ($(NONFREE_AND_GPL),1)
 
 $(PACKAGES)/gettext-1.0.tar.gz: | dirs
 	$(call download_file,https://ftpmirror.gnu.org/gettext/gettext-1.0.tar.gz,85d99b79c981a404874c02e0342176cf75c7698e2b51fe41031cf6526d974f1a)
@@ -324,36 +320,6 @@ $(PACKAGES)/openssl.done: $(PACKAGES)/openssl-3.6.1.tar.gz $(PACKAGES)/zlib.done
 		$(MAKE) -j $(MJOBS) && \
 		$(MAKE) install_sw
 	@echo "3.6.1" > $@
-
-else # !NONFREE_AND_GPL
-
-$(PACKAGES)/gmp-6.3.0.tar.xz: | dirs
-	$(call download_file,https://ftpmirror.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz,a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898)
-
-$(PACKAGES)/gmp.done: $(PACKAGES)/gmp-6.3.0.tar.xz
-	@rm -rf $(PACKAGES)/gmp-6.3.0 && mkdir -p $(PACKAGES)/gmp-6.3.0
-	@tar -xf $< -C $(PACKAGES)/gmp-6.3.0 --strip-components 1 || { rm -f $<; exit 1; }
-	cd $(PACKAGES)/gmp-6.3.0 && \
-		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static && \
-		$(MAKE) -j $(MJOBS) && \
-		$(MAKE) install
-	@echo "6.3.0" > $@
-
-$(PACKAGES)/nettle-3.10.2.tar.gz: | dirs
-	$(call download_file,https://ftpmirror.gnu.org/gnu/nettle/nettle-3.10.2.tar.gz,fe9ff51cb1f2abb5e65a6b8c10a92da0ab5ab6eaf26e7fc2b675c45f1fb519b5)
-
-$(PACKAGES)/nettle.done: $(PACKAGES)/nettle-3.10.2.tar.gz $(PACKAGES)/gmp.done
-	@rm -rf $(PACKAGES)/nettle-3.10.2 && mkdir -p $(PACKAGES)/nettle-3.10.2
-	@tar -xf $< -C $(PACKAGES)/nettle-3.10.2 --strip-components 1 || { rm -f $<; exit 1; }
-	cd $(PACKAGES)/nettle-3.10.2 && \
-		./configure --prefix="$(WORKSPACE)" --disable-shared --enable-static \
-			--disable-openssl --disable-documentation --libdir="$(WORKSPACE)/lib" \
-			CPPFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" && \
-		$(MAKE) -j $(MJOBS) && \
-		$(MAKE) install
-	@echo "3.10.2" > $@
-
-endif # NONFREE_AND_GPL
 
 # =============================================================================
 # Video libraries
@@ -446,8 +412,7 @@ $(PACKAGES)/zimg.done: $(PACKAGES)/zimg-3.0.6.tar.gz
 		$(MAKE) install
 	@echo "3.0.6" > $@
 
-# --- NONFREE_AND_GPL video libraries ---
-ifeq ($(NONFREE_AND_GPL),1)
+# --- GPL video libraries ---
 
 $(PACKAGES)/x264-0480cb05.tar.gz: | dirs
 	$(call download_file,https://code.videolan.org/videolan/x264/-/archive/0480cb05/x264-0480cb05.tar.gz,b336cdb04eeca5d15a53db323bc716fd7a1dae7bf19df0a8a41379d2d65e05d0)
@@ -535,6 +500,8 @@ endif
 		$(MAKE) && $(MAKE) install
 	@echo "1.1.1" > $@
 
+ifeq ($(NONFREE_AND_GPL),1)
+
 $(PACKAGES)/fdk-aac-2.0.3.tar.gz: | dirs
 	$(call download_file,https://sourceforge.net/projects/opencore-amr/files/fdk-aac/fdk-aac-2.0.3.tar.gz/download?use_mirror=gigenet,829b6b89eef382409cda6857fd82af84fabb63417b08ede9ea7a553f811cb79e)
 
@@ -546,6 +513,8 @@ $(PACKAGES)/fdk_aac.done: $(PACKAGES)/fdk-aac-2.0.3.tar.gz
 		$(MAKE) -j $(MJOBS) && \
 		$(MAKE) install
 	@echo "2.0.3" > $@
+
+endif # NONFREE_AND_GPL
 
 $(PACKAGES)/srt-1.5.4.tar.gz: | dirs
 	$(call download_file,https://github.com/Haivision/srt/archive/v1.5.4.tar.gz,d0a8b600fe1b4eaaf6277530e3cfc8f15b8ce4035f16af4a5eb5d4b123640cdd)
@@ -579,8 +548,6 @@ $(PACKAGES)/zvbi.done: $(PACKAGES)/zvbi-0.2.44.tar.gz $(PACKAGES)/libpng.done
 		$(MAKE) -j $(MJOBS) && \
 		$(MAKE) install
 	@echo "0.2.44" > $@
-
-endif # NONFREE_AND_GPL
 
 # =============================================================================
 # Audio libraries
