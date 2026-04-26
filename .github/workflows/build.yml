@@ -21,7 +21,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y \
             build-essential pkg-config nasm yasm \
-            autoconf automake libtool cmake \
+            autoconf automake autopoint libtool cmake \
             meson ninja-build python3-setuptools rustc cargo \
             libdrm-dev gettext libudev-dev
 
@@ -173,6 +173,8 @@ jobs:
           find ffmpeg-src -name config.log -exec cp {} failure-logs/ \; || true
 
       - name: Verify build
+        env:
+          LD_LIBRARY_PATH: ${{ github.workspace }}/install/lib
         run: |
           ./install/bin/ffmpeg -version
           ./install/bin/ffprobe -version
