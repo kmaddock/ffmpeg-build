@@ -112,7 +112,7 @@ jobs:
             libssl-dev libsrt-openssl-dev \
             libvidstab-dev libzvbi-dev \
             liblilv-dev glslang-tools gettext \
-            libvulkan-dev libdrm-dev libv4l-dev \
+            libdrm-dev libv4l-dev \
             ocl-icd-opencl-dev \
             libudev-dev linux-libc-dev libv4l2rds0
 
@@ -145,7 +145,6 @@ jobs:
             --enable-libwebp \
             --enable-libfreetype \
             --enable-libzmq \
-            --enable-vulkan \
             --enable-libdav1d \
             --enable-librav1e \
             --enable-openssl \
