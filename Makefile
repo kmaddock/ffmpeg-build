@@ -155,6 +155,7 @@ ifdef HAS_CARGO
 endif
 
 CONFIGURE_OPTIONS += --enable-gpl
+CONFIGURE_OPTIONS += --enable-postproc
 FFMPEG_DEPS += $(PACKAGES)/gettext.done
 FFMPEG_DEPS += $(PACKAGES)/openssl.done
 CONFIGURE_OPTIONS += --enable-openssl
