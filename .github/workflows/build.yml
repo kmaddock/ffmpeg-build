@@ -113,7 +113,8 @@ jobs:
             libvidstab-dev libzvbi-dev \
             liblilv-dev glslang-tools gettext \
             libvulkan-dev libdrm-dev libv4l-dev \
-            ocl-icd-opencl-dev
+            ocl-icd-opencl-dev \
+            libudev-dev linux-libc-dev libv4l2rds0
 
       - name: Clone FFmpeg
         run: git clone --depth 1 https://github.com/Kwiboo/FFmpeg.git ffmpeg-src
