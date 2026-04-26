@@ -155,7 +155,6 @@ jobs:
             --enable-libsrt \
             --enable-libzvbi \
             --enable-lv2 \
-            --enable-postproc \
             --disable-ffnvcodec \
             --enable-opencl \
             --enable-v4l2-request \
