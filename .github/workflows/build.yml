@@ -119,6 +119,12 @@ jobs:
       - name: Clone FFmpeg
         run: git clone --depth 1 https://github.com/Kwiboo/FFmpeg.git ffmpeg-src
 
+      - name: Merge FFmpeg source plugins
+        run: |
+          cd ffmpeg-src
+          git fetch --unshallow
+          tools/merge-all-source-plugins tools/source-plugins.txt
+
       - name: Configure FFmpeg
         run: |
           cd ffmpeg-src
@@ -155,6 +161,7 @@ jobs:
             --enable-libsrt \
             --enable-libzvbi \
             --enable-lv2 \
+            --enable-postproc \
             --disable-ffnvcodec \
             --enable-opencl \
             --enable-v4l2-request \

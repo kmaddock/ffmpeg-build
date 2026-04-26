@@ -201,6 +201,7 @@ ifeq ($(UNAME),Linux)
   CONFIGURE_OPTIONS += --enable-opencl
   CONFIGURE_OPTIONS += --enable-v4l2-request --enable-libdrm
   CONFIGURE_OPTIONS += --enable-libudev
+  CONFIGURE_OPTIONS += --enable-postproc
 endif
 
 # =============================================================================
@@ -1019,6 +1020,10 @@ endif
 .PHONY: ffmpeg-pull
 ffmpeg-pull: $(FFMPEG_SRCDIR)/.git
 	cd $(FFMPEG_SRCDIR) && git pull --ff-only
+ifeq ($(UNAME),Linux)
+	cd $(FFMPEG_SRCDIR) && git fetch --unshallow 2>/dev/null || true
+	cd $(FFMPEG_SRCDIR) && tools/merge-all-source-plugins tools/source-plugins.txt
+endif
 
 # Configure: re-runs when deps rebuild, args change, or configure script changes
 $(PACKAGES)/ffmpeg.configured: $(FFMPEG_DEPS) $(PACKAGES)/ffmpeg.configure.stamp | dirs
