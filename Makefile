@@ -1022,6 +1022,7 @@ ffmpeg-pull: $(FFMPEG_SRCDIR)/.git
 	cd $(FFMPEG_SRCDIR) && git pull --ff-only
 ifeq ($(UNAME),Linux)
 	cd $(FFMPEG_SRCDIR) && git fetch --unshallow 2>/dev/null || true
+	cd $(FFMPEG_SRCDIR) && git config user.email "ci@localhost" && git config user.name "CI"
 	cd $(FFMPEG_SRCDIR) && tools/merge-all-source-plugins tools/source-plugins.txt
 endif
 

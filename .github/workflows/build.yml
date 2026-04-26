@@ -123,6 +123,8 @@ jobs:
         run: |
           cd ffmpeg-src
           git fetch --unshallow
+          git config user.email "ci@localhost"
+          git config user.name "CI"
           tools/merge-all-source-plugins tools/source-plugins.txt
 
       - name: Configure FFmpeg
